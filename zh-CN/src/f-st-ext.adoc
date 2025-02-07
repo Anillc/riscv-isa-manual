@@ -1,42 +1,22 @@
 :stem: latexmath
 
 [[single-float]]
-== "F" Extension for Single-Precision Floating-Point, Version 2.2
+== "F" 扩展用于单精度浮点，版本 2.2
 
-This chapter describes the standard instruction-set extension for
-single-precision floating-point, which is named "F" and adds
-single-precision floating-point computational instructions compliant
-with the IEEE 754-2008 arithmetic standard cite:[ieee754-2008]. The F extension depends on the "Zicsr" extension for control and status register access.
+本章描述了用于单精度浮点的标准指令集扩展，被命名为"F"，并添加了符合IEEE 754-2008算术标准的单精度浮点计算指令cite:[ieee754-2008]。 F扩展依赖于"Zicsr"扩展用于控制和状态寄存器访问。
 
-=== F Register State
+=== F寄存器状态
 
-The F extension adds 32 floating-point registers, `f0-f31`, each 32
-bits wide, and a floating-point control and status register `fcsr`,
-which contains the operating mode and exception status of the
-floating-point unit. This additional state is shown in
-<<fprs>>. We use the term FLEN to describe the width of
-the floating-point registers in the RISC-V ISA, and FLEN=32 for the F
-single-precision floating-point extension. Most floating-point
-instructions operate on values in the floating-point register file.
-Floating-point load and store instructions transfer floating-point
-values between registers and memory. Instructions to transfer values to and from the integer register file are also provided.
+F扩展增加了32个浮点寄存器，`f0-f31`，每个位宽32位，以及浮点控制和状态寄存器`fcsr`，其包含浮点单元的操作模式和异常状态。 此附加状态如 <<fprs>> 所示。 我们使用术语FLEN来描述RISC-V ISA中浮点寄存器的宽度，对于F单精度浮点扩展，FLEN=32。 大多数浮点指令在浮点寄存器文件中的值上操作。
+浮点加载和存储指令在寄存器和内存之间传输浮点值。 还提供了在整数寄存器文件之间传输值的指令。
 
 [TIP]
 ====
-We considered a unified register file for both integer and
-floating-point values as this simplifies software register allocation
-and calling conventions, and reduces total user state. However, a split
-organization increases the total number of registers accessible with a
-given instruction width, simplifies provision of enough regfile ports
-for wide superscalar issue, supports decoupled floating-point-unit
-architectures, and simplifies use of internal floating-point encoding
-techniques. Compiler support and calling conventions for split register
-file architectures are well understood, and using dirty bits on
-floating-point register file state can reduce context-switch overhead.
+我们考虑过一个统一的寄存器文件用于整数和浮点值，因为这简化了软件寄存器分配和调用约定，并减少了总用户状态。 然而，分离的组织增加了在给定指令宽度下可访问的寄存器总数，简化了为广泛超标量发射提供足够的寄存器文件端口，支持解耦浮点单元架构，并简化了内部浮点编码技术的使用。 对于分裂寄存器文件架构，编译器支持和调用约定是公认的，并且使用浮点寄存器文件状态的脏位可以减少上下文切换的开销。
 ====
 
 [[fprs]]
-.RISC-V standard F extension single-precision floating-point state
+.RISC-V标准F扩展单精度浮点状态
 [cols="<,^,>", options="header", width="50%", align="center", grid="rows"]
 |===
 |[.small]#FLEN-1#
@@ -116,259 +96,174 @@ floating-point register file state can reduce context-switch overhead.
 3+^|[.small]#32#
 |===
 
-=== Floating-Point Control and Status Register
+=== 浮点控制和状态寄存器
 
-The floating-point control and status register, `fcsr`, is a RISC-V
-control and status register (CSR). It is a 32-bit read/write register
-that selects the dynamic rounding mode for floating-point arithmetic
-operations and holds the accrued exception flags, as shown in <<fcsr>>.
+浮点控制和状态寄存器`fcsr`是一个RISC-V控制和状态寄存器（CSR）。 它是一个32位读/写寄存器，用于选择浮点算术操作的动态舍入模式，并持有累积的异常标志，如<<fcsr>>所示。
 
 include::images/wavedrom/float-csr.adoc[]
 
-The `fcsr` register can be read and written with the FRCSR and FSCSR
-instructions, which are assembler pseudoinstructions built on the
-underlying CSR access instructions. FRCSR reads `fcsr` by copying it
-into integer register _rd_. FSCSR swaps the value in `fcsr` by copying
-the original value into integer register _rd_, and then writing a new
-value obtained from integer register _rs1_ into `fcsr`.
+使用FRCSR和FSCSR指令可以读写`fcsr`寄存器，这些是基于底层CSR访问指令的汇编伪指令。 FRCSR通过将`fcsr`复制到整数寄存器_rd_来读取它。 FSCSR通过将原始值复制到整数寄存器_rd_，然后从整数寄存器_rs1_获得新值后写入`fcsr`，这样交换`fcsr`中的值。
 
-The fields within the `fcsr` can also be accessed individually through
-different CSR addresses, and separate assembler pseudoinstructions are defined
-for these accesses. The FRRM instruction reads the Rounding Mode field `frm`
-(`fcsr` bits 7--5) and copies it into the least-significant three bits of
-integer register _rd_, with zero in all other bits. FSRM swaps the value in
-`frm` by copying the original value into integer register _rd_, and then
-writing a new value obtained from the three least-significant bits of integer
-register _rs1_ into `frm`. FRFLAGS and FSFLAGS are defined analogously for the
-Accrued Exception Flags field `fflags` (`fcsr` bits 4--0).
+可以通过不同的CSR地址单独访问`fcsr`内的字段，并为这些访问定义了独立的汇编伪指令。 FRRM指令读取舍入模式字段`frm`（`fcsr`位7--5）并将其复制到整数寄存器_rd_的最低有效三位，其他位全为零。 FSRM通过将原始值复制到整数寄存器_rd_，然后从整数寄存器_rs1_的最低有效三位获得新值后写入`frm`，这样交换`frm`中的值。 FRFLAGS和FSFLAGS在累积的异常标志字段`fflags`（`fcsr`位4--0）中是按类似方式定义的。
 
-Bits 31--8 of the `fcsr` are reserved for other standard extensions. If
-these extensions are not present, implementations shall ignore writes to
-these bits and supply a zero value when read. Standard software should
-preserve the contents of these bits.
+`fcsr`的位31--8保留给其他标准扩展。 如果这些扩展不存在，实现应忽略对这些位的写入，并在读取时提供一个零值。 标准软件应保留这些位的内容。
 
-Floating-point operations use either a static rounding mode encoded in
-the instruction, or a dynamic rounding mode held in `frm`. Rounding
-modes are encoded as shown in <<rm>>. A value of 111 in the
-instruction's _rm_ field selects the dynamic rounding mode held in
-`frm`. The behavior of floating-point instructions that depend on
-rounding mode when executed with a reserved rounding mode is _reserved_, including both static reserved rounding modes (101-110) and dynamic reserved rounding modes (101-111). Some instructions, including widening conversions, have the _rm_ field but are nevertheless mathematically unaffected by the rounding mode; software should set their _rm_ field to
-RNE (000) but implementations must treat the _rm_ field as usual (in
-particular, with regard to decoding legal vs. reserved encodings).
+浮点操作使用指令中编码的静态舍入模式，或者使用`frm`中持有的动态舍入模式。 舍入模式如<<rm>>所示进行编码。 指令的_rm_字段中值为111时，选择`frm`中持有的动态舍入模式。 依赖舍入模式的浮点指令在使用保留舍入模式执行时的行为是_保留_的，包括静态保留的舍入模式（101--110）和动态保留的舍入模式（101--111）。 某些指令，包括扩展转换，具有_rm_字段但数学上不受舍入模式影响；软件应将其_rm_字段设置为RNE（000），但实现必须按常规处理_rm_字段（特别是在解码合法与保留编码时）。
 
 [[rm]]
-.Rounding mode encoding.
+.舍入模式编码。
 [%autowidth, float="center", align="center", cols="^,^,<", options="header"]
 |===
-|Rounding Mode |Mnemonic |Meaning
+|舍入模式 |助记符 |含义
 
-|000 |RNE |Round to Nearest, ties to Even
+|000 |RNE |就近舍入，偶舍对绑
 
-|001 |RTZ |Round towards Zero
+|001 |RTZ |向零舍入
 
-|010 |RDN |Round Down (towards latexmath:[$-\infty$])
+|010 |RDN |向下舍入（向负无穷）
 
-|011 |RUP |Round Up (towards latexmath:[$+\infty$])
+|011 |RUP |向上舍入（向正无穷）
 
-|100 |RMM |Round to Nearest, ties to Max Magnitude
+|100 |RMM |就近舍入，最大值对绑
 
-|101 | |_Reserved for future use._
+|101 | |_保留供将来使用._
 
-|110 | |_Reserved for future use._
+|110 | |_保留供将来使用._
 
-|111 |DYN |In instruction's _rm_ field, selects dynamic rounding mode; In Rounding Mode register, _reserved_.
+|111 |DYN |在指令的_rm_字段中，选择动态舍入模式；在舍入模式寄存器中，_保留_。
 |===
 
 [NOTE]
 ====
-The C99 language standard effectively mandates the provision of a
-dynamic rounding mode register. In typical implementations, writes to
-the dynamic rounding mode CSR state will serialize the pipeline. Static
-rounding modes are used to implement specialized arithmetic operations
-that often have to switch frequently between different rounding modes.
+C99语言标准实际上规定了提供动态舍入模式寄存器。 在典型实现中，对动态舍入模式CSR状态的写入将使流水线顺序化。 静态舍入模式用于实现需要频繁在不同舍入模式之间切换的专用算术操作。
 
-The ratified version of the F spec mandated that an illegal-instruction
-exception was raised when an instruction was executed with a reserved
-dynamic rounding mode. This has been weakened to reserved, which matches
-the behavior of static rounding-mode instructions. Raising an
-illegal-instruction exception is still valid behavior when encountering a
-reserved encoding, so implementations compatible with the ratified spec
-are compatible with the weakened spec.
+F规范的经批准版本规定，当指令使用保留动态舍入模式执行时，会引发非法指令异常。 这已被削弱为保留，这与静态舍入模式指令的行为相匹配。 在遇到保留编码时，仍然可以通过引发非法指令异常来实现，因此与经批准规范兼容的实现也与削弱的规范兼容。
 ====
 
-The accrued exception flags indicate the exception conditions that have
-arisen on any floating-point arithmetic instruction since the field was
-last reset by software, as shown in <<bitdef>>. The base
-RISC-V ISA does not support generating a trap on the setting of a
-floating-point exception flag.
-(((floating-point, exception flag)))
+累积异常标志指出自上次通过软件重置字段以来，在任何浮点算术指令上产生的异常条件，如<<bitdef>>所示。 基本的RISC-V ISA不支持在设置浮点异常标志时生成陷阱。
+(((浮点,异常标志)))
 
 [[bitdef]]
-.Accrued exception flag encoding.
+.累计异常标志编码。
 [%autowidth, float="center", align="center", cols="^,<", options="header"]
 |===
-|Flag Mnemonic |Flag Meaning
+|标志助记符 |标志含义
 
-|NV |Invalid Operation
+|NV |无效操作
 
-|DZ |Divide by Zero
+|DZ |除以零
 
-|OF |Overflow
+|OF |溢出
 
-|UF |Underflow
+|UF |下溢
 
-|NX |Inexact
+|NX |不准确
 |===
 
 [NOTE]
 ====
-As allowed by the standard, we do not support traps on floating-point
-exceptions in the F extension, but instead require explicit checks of
-the flags in software. We considered adding branches controlled directly
-by the contents of the floating-point accrued exception flags, but
-ultimately chose to omit these instructions to keep the ISA simple.
+根据标准所允许的，我们在F扩展中不支持浮点异常上的陷阱，而是要求在软件中显式检查标志。 我们考虑过添加由浮点累积异常标志内容直接控制的分支，但最终选择省略这些指令以保持ISA简单。
 ====
 
-=== NaN Generation and Propagation
+=== NaN生成和传播
 
-Except when otherwise stated, if the result of a floating-point
-operation is NaN, it is the canonical NaN. The canonical NaN has a
-positive sign and all significand bits clear except the MSB, a.k.a. the
-quiet bit. For single-precision floating-point, this corresponds to the pattern `0x7fc00000`.
-(((NaN, generation)))
-(((NaN, propagation)))
+除非另有说明，否则如果浮点运算的结果是NaN，则为规范NaN。 规范NaN的符号为正，所有有效数字位清除，除了MSB，又称为安静位。 对于单精度浮点，这对应于模式`0x7fc00000`。 对于单精度浮点，这对应于模式`0x7fc00000`。
+(((NaN, 生成))) (((NaN, 传播)))
 
 [TIP]
 ====
-We considered propagating NaN payloads, as is recommended by the
-standard, but this decision would have increased hardware cost.
-Moreover, since this feature is optional in the standard, it cannot be
-used in portable code.
+此外，由于这一功能在标准中是可选的，因此不能在可移植代码中使用。
+实施者可以自由提供一个NaN负载传播方案作为非标准扩展通过非标准操作模式启用。
 
-Implementors are free to provide a NaN payload propagation scheme as a
-nonstandard extension enabled by a nonstandard operating mode. However, the canonical NaN scheme described above must always be supported and should be the default mode.
+然而，上述的规范NaN方案必须始终得到支持，并应成为默认模式。 然而，以上描述的标准NaN方案必须始终支持，并且应为默认模式。
 ====
 
 '''
 
 [NOTE]
 ====
-We require implementations to return the standard-mandated default
-values in the case of exceptional conditions, without any further
-intervention on the part of user-level software (unlike the Alpha ISA
-floating-point trap barriers). We believe full hardware handling of
-exceptional cases will become more common, and so wish to avoid
-complicating the user-level ISA to optimize other approaches.
-Implementations can always trap to machine-mode software handlers to
-provide exceptional default values.
+我们要求实现者在异常条件下返回标准要求的默认值，而无需用户级软件的进一步干预（不像Alpha ISA浮点陷阱屏障）。 实现者可以始终陷入机器模式软件处理程序以提供异常默认值。
+实现可以随时陷入机器模式软件处理程序，以提供异常默认值。
 ====
 
-=== Subnormal Arithmetic
+=== 次正规算术
 
-Operations on subnormal numbers are handled in accordance with the IEEE 754-2008 standard.
-(((operations, subnormal)))
+对次正规数的运算按照IEEE 754-2008标准处理。
+(((运算, 次正规)))
 
-In the parlance of the IEEE standard, tininess is detected after
-rounding.
-(((tininess, handling)))
+在IEEE标准的用词中，四舍五入后检测微小数。
+(((微小数, 处理)))
 
 [NOTE]
 ====
-Detecting tininess after rounding results in fewer spurious underflow
-signals.
+在舍入后检测微小可减少伪下溢信号。
 ====
 
-=== Single-Precision Load and Store Instructions
+=== 单精度加载和存储指令。
 
-Floating-point loads and stores use the same base+offset addressing mode as the integer base ISAs, with a base address in register _rs1_ and a 12-bit signed byte offset. The FLW instruction loads a single-precision floating-point value from memory into floating-point register _rd_. FSW stores a single-precision value from floating-point register _rs2_ to memory.
+浮点加载和存储使用与整数基本ISA相同的基址+偏移寻址模式，基址在寄存器`_rs1_`中，偏移为12位有符号字节偏移。 FLW指令从内存中加载单精度浮点值到浮点寄存器_rd_中。 FSW将单精度值从浮点寄存器_rs2_存储到内存中。
 
 include::images/wavedrom/sp-load-store-2.adoc[]
 
 //.SP load and store
 
-FLW and FSW are only guaranteed to execute atomically if the effective
-address is naturally aligned.
+FLW和FSW不修改正在传输的位；特别是，非规范NaN的负载被保留。
 
-FLW and FSW do not modify the bits being transferred; in particular, the payloads of non-canonical NaNs are preserved.
+FLW和FSW不修改传输的位；特别是，非规范NaN的有效负载会被保留。
 
-As described in <<ldst>>, the execution environment defines whether misaligned floating-point loads and stores are handled invisibly or raise a contained or fatal trap.
+如<<ldst>>中所述，执行环境定义未对齐浮点加载和存储是被无形处理还是引发一个受控或致命的陷阱。
 
 [[single-float-compute]]
-=== Single-Precision Floating-Point Computational Instructions
+=== 单精度浮点计算指令。
 
-Floating-point arithmetic instructions with one or two source operands
-use the R-type format with the OP-FP major opcode. FADD.S and FMUL.S
-perform single-precision floating-point addition and multiplication
-respectively, between _rs1_ and _rs2_. FSUB.S performs the
-single-precision floating-point subtraction of _rs2_ from _rs1_. FDIV.S performs the single-precision floating-point division of _rs1_ by _rs2_. FSQRT.S computes the square root of _rs1_. In each case, the result is written to _rd_.
+带有一个或两个源操作数的浮点算术指令使用OP-FP主操作码的R型格式。 FADD.S和FMUL.S分别在_rs1_和_rs2_之间执行单精度浮点加法和乘法。 FSUB.S执行单精度浮点从_rs1_中减去_rs2_的减法。 FDIV.S执行_rs1_被_rs2_除的单精度浮点除法。 在每种情况下，结果写入_rd_。 在每种情况下，结果写入_rd_。
 
-The 2-bit floating-point format field _fmt_ is encoded as shown in
-<<fmt>>. It is set to _S_ (00) for all instructions in the F extension.
+2位浮点格式字段_fmt_如<<fmt>>中编码。 对于F扩展中的所有指令，设置为_S_（00）。
 
 [[fmt]]
-.Format field encoding
+._fmt_字段
 [%autowidth, float="center", align="center", cols="^,^,<", options="header"]
 |===
-|_fmt_ field |Mnemonic |Meaning
+|助记符 |含义 |格式字段编码。
 
-|00 |S |32-bit single-precision
+|S |S |32位单精度
 
-|01 |D |64-bit double-precision
+|D |D |64位双精度
 
-|10 |H |16-bit half-precision
+|H |16位半精度 |Q
 
-|11 |Q |128-bit quad-precision
+|Q |128位四精度 |所有执行舍入的浮点操作可以使用_rm_字段选择舍入模式，编码如<<rm>>中所示。
 |===
 
-All floating-point operations that perform rounding can select the
-rounding mode using the _rm_ field with the encoding shown in
-<<rm>>.
+浮点最小数和最大数指令FMIN.S和FMAX.S分别将_rs1_和_rs2_中较小或较大的写入_rd_。
 
-Floating-point minimum-number and maximum-number instructions FMIN.S and FMAX.S write, respectively, the smaller or larger of _rs1_ and _rs2_ to _rd_. For the purposes of these instructions only, the value
-latexmath:[$-0.0$] is considered to be less than the value
-latexmath:[$+0.0$]. If both inputs are NaNs, the result is the canonical NaN. If only one operand is a NaN, the result is the non-NaN operand.
-Signaling NaN inputs set the invalid operation exception flag, even when the result is not NaN.
+仅在这些指令的目的下，数值latexmath:[$-0.0$]被认为小于数值latexmath:[$+0.0$]。 仅为这些指令的目的，值latexmath:[$-0.0$]被视为小于值latexmath:[$+0.0$]。 如果只有一个操作数是NaN，结果是非NaN操作数。 信号NaN输入设置无效操作异常标志，即使结果不是NaN。
+信号NaN输入设置无效操作异常标志，即使结果不是NaN。
 
 [NOTE]
 ====
-Note that in version 2.2 of the F extension, the FMIN.S and FMAX.S
-instructions were amended to implement the proposed IEEE 754-201x
-minimumNumber and maximumNumber operations, rather than the IEEE
-754-2008 minNum and maxNum operations. These operations differ in their
-handling of signaling NaNs.
+注意，在版本2.2的F扩展中，FMIN.S和FMAX.S指令已修改为实施提议的IEEE 754-201x最小数和最大数操作，而不是IEEE 754-2008的minNum和maxNum操作。 这些操作在处理信号NaN时有所不同。
 ====
 
 include::images/wavedrom/spfloat.adoc[]
 
 //.Single-Precision Floating-Point Computational Instructions
 
-(((floating point, fused multiply-add)))
+(((浮点, 融合乘加)))
 
-Floating-point fused multiply-add instructions require a new standard
-instruction format. R4-type instructions specify three source registers (_rs1_, _rs2_, and _rs3_) and a destination register (_rd_). This format is only used by the floating-point fused multiply-add instructions.
+浮点融合乘加指令需要新的标准指令格式。 R4型指令指定三个源寄存器 (_rs1_, _rs2_ 和 _rs3_) 以及一个目标寄存器 (_rd_)。 这种格式仅用于浮点融合乘加指令。
 
-FMADD.S multiplies the values in _rs1_ and _rs2_, adds the value in
-_rs3_, and writes the final result to _rd_. FMADD.S computes
-_(rs1latexmath:[$\times$]rs2)latexmath:[$\+$]rs3_.
+FMADD.S对_rs1_和_rs2_的值进行乘法，加上_rs3_中的值，并将最终结果写入_rd_。 FMADD.S计算_(rs1latexmath:[$\times$]rs2)latexmath:[$\+$]rs3_。
 
-FMSUB.S multiplies the values in _rs1_ and _rs2_, subtracts the value in _rs3_, and writes the final result to _rd_. FMSUB.S computes
-_(rs1latexmath:[$\times$]rs2)latexmath:[$\-$]rs3_.
+FMSUB.S对_rs1_和_rs2_的值进行乘法，减去_rs3_中的值，并将最终结果写入_rd_。 FMSUB.S计算 _(rs1latexmath:[$\times$]rs2)latexmath:[$\-$]rs3_。
 
-FNMSUB.S multiplies the values in _rs1_ and _rs2_, negates the product, adds the value in _rs3_, and writes the final result to _rd_. FNMSUB.S computes _-(rs1latexmath:[$\times$]rs2)latexmath:[$\+$]rs3_.
+FNMSUB.S对_rs1_和_rs2_的值进行乘法，对乘积取负，加上_rs3_中的值，并将最终结果写入_rd_。 FNMSUB.S计算 _-(rs1latexmath:[$\times$]rs2)latexmath:[$\+$]rs3_。
 
-FNMADD.S multiplies the values in _rs1_ and _rs2_, negates the product, subtracts the value in _rs3_, and writes the final result to _rd_. FNMADD.S computes _-(rs1latexmath:[$\times$]rs2)latexmath:[$\-$]rs3_.
+FNMADD.S对_rs1_和_rs2_的值进行乘法，对乘积取负，减去_rs3_中的值，并将最终结果写入_rd_。 FNMADD.S计算 _-(rs1latexmath:[$\times$]rs2)latexmath:[$\-$]rs3_。
 
 [NOTE]
 ====
-The FNMSUB and FNMADD instructions are counterintuitively named, owing
-to the naming of the corresponding instructions in MIPS-IV. The MIPS
-instructions were defined to negate the sum, rather than negating the
-product as the RISC-V instructions do, so the naming scheme was more
-rational at the time. The two definitions differ with respect to
-signed-zero results. The RISC-V definition matches the behavior of the
-x86 and ARM fused multiply-add instructions, but unfortunately the
-RISC-V FNMSUB and FNMADD instruction names are swapped compared to x86
-and ARM.
+两种定义在处理符号零结果时有差异。 MIPS指令的定义是取和的负数，而RISC-V指令对乘积取负，因此当时命名方案更合理。 两个定义在签名零结果方面有所不同。 RISC-V定义匹配x86和ARM融合乘加指令的行为，但不幸的是，RISC-V FNMSUB和FNMADD指令名和x86及ARM之间是对换的。
 ====
 
 include::images/wavedrom/spfloat2.adoc[]
@@ -377,112 +272,73 @@ include::images/wavedrom/spfloat2.adoc[]
 
 [NOTE]
 ====
-The fused multiply-add (FMA) instructions consume a large part of the
-32-bit instruction encoding space. Some alternatives considered were to
-restrict FMA to only use dynamic rounding modes, but static rounding
-modes are useful in code that exploits the lack of product rounding.
-Another alternative would have been to use rd to provide rs3, but this
-would require additional move instructions in some common sequences. The current design still leaves a large portion of the 32-bit encoding space open while avoiding having FMA be non-orthogonal.
+融合乘加 (FMA) 指令耗费了32位指令编码空间的一大部分。 一些考虑到的替代方案是限制FMA仅使用动态舍入模式，但静态舍入模式在利用缺乏乘积舍入的代码中很有用。
+融合乘加指令必须在乘数为latexmath:[$\infty$]和零时设置无效操作异常标志，即使加数是安静NaN。 目前的设计仍然保持了很大一部分32位编码空间开放，同时避免让FMA变得不正交。
 ====
 
-The fused multiply-add instructions must set the invalid operation
-exception flag when the multiplicands are latexmath:[$\infty$] and zero, even when the addend is a quiet NaN.
+IEEE 754-2008标准允许，但不要求，抬高无效异常对于操作latexmath:[$\infty\times 0\ +$]qNaN。
 
 [NOTE]
 ====
-The IEEE 754-2008 standard permits, but does not require, raising the
-invalid exception for the operation latexmath:[$\infty\times 0\ +$]qNaN.
+单精度浮点转换和移动指令。
 ====
 
-=== Single-Precision Floating-Point Conversion and Move Instructions
+=== 浮点到整数和整数到浮点的转换指令编码在OP-FP主操作码空间。
 
-Floating-point-to-integer and integer-to-floating-point conversion
-instructions are encoded in the OP-FP major opcode space. FCVT.W.S or
-FCVT.L.S converts a floating-point number in floating-point register
-_rs1_ to a signed 32-bit or 64-bit integer, respectively, in integer
-register _rd_. FCVT.S.W or FCVT.S.L converts a 32-bit or 64-bit signed
-integer, respectively, in integer register _rs1_ into a floating-point
-number in floating-point register _rd_. FCVT.WU.S, FCVT.LU.S, FCVT.S.WU,
-and FCVT.S.LU variants convert to or from unsigned integer values. For
-XLENlatexmath:[$>32$], FCVT.W[U].S sign-extends the 32-bit result to the
-destination register width. FCVT.L[U].S and FCVT.S.L[U] are RV64-only
-instructions. If the rounded result is not representable in the
-destination format, it is clipped to the nearest value and the invalid
-flag is set. <<int_conv>> gives the range of valid inputs
-for FCVT._int_.S and the behavior for invalid inputs.
-(((floating-point, conversion)))
+FCVT.W.S或FCVT.L.S将浮点寄存器_rs1_中的浮点数转换为整数寄存器_rd_中有符号的32位或64位整数。 FCVT.S.W或FCVT.S.L将整数寄存器_rs1_中的32位或64位有符号整数转换为浮点寄存器_rd_中的浮点数。 FCVT.WU.S，FCVT.LU.S，FCVT.S.WU和FCVT.S.LU变体转换为或从无符号整数值转换。 对于XLENlatexmath:[$>32$]，FCVT.W[U].S将32位结果符号扩展到目标寄存器宽度。 FCVT.L[U].S和FCVT.S.L[U]为RV64专用指令。 如果四舍五入后的结果在目标格式中不可表示，则将其剪裁到最近的值并设置无效标志。 <<int_conv>>给出FCVT._int_.S的有效输入范围及无效输入的行为。 所有浮点到整数和整数到浮点的转换指令都根据_rm_字段进行舍入。
+可以使用FCVT.S.W _rd_, `x0`将浮点寄存器初始化为浮点正零，这永远不会设置异常标志。
 
-All floating-point to integer and integer to floating-point conversion
-instructions round according to the _rm_ field. A floating-point
-register can be initialized to floating-point positive zero using
-FCVT.S.W _rd_, `x0`, which will never set any exception flags.
+浮点到整数转换的范围和无效输入行为。 FCVT.W.S
 
 [[int_conv]]
-.Domains of float-to-integer conversions and behavior for invalid inputs
+.FCVT.WU.S
 [%autowidth, float="center", align="center", cols="<,>,>,>,>", options="header"]
 |===
-| |FCVT.W.S |FCVT.WU.S |FCVT.L.S |FCVT.LU.S
+| |FCVT.L.S |FCVT.LU.S |FCVT.L.S |FCVT.LU.S
 
-|Minimum valid input (after rounding) |latexmath:[$-2^{31}$] |0
+|最小有效输入（舍入后） |latexmath:[$-2^{31}$] |0
 |latexmath:[$-2^{63}$] |0
 
-|Maximum valid input (after rounding) |latexmath:[$2^{31}-1$]
+|最大有效输入（舍入后） |latexmath:[$2^{31}-1$]
 |latexmath:[$2^{32}-1$] |latexmath:[$2^{63}-1$] |latexmath:[$2^{64}-1$]
 
-|Output for out-of-range negative input |latexmath:[$-2^{31}$] |0
+|超出范围负输入的输出 |latexmath:[$-2^{31}$] |0
 |latexmath:[$-2^{63}$] |0
 
-|Output for latexmath:[$-\infty$] |latexmath:[$-2^{31}$] |0
+|latexmath:[$-\infty$]的输出 |latexmath:[$-2^{31}$] |0
 |latexmath:[$-2^{63}$] |0
 
-|Output for out-of-range positive input |latexmath:[$2^{31}-1$]
+|超出范围正输入的输出 |latexmath:[$2^{31}-1$]
 |latexmath:[$2^{32}-1$] |latexmath:[$2^{63}-1$] |latexmath:[$2^{64}-1$]
 
-|Output for latexmath:[$+\infty$] or NaN |latexmath:[$2^{31}-1$]
+|latexmath:[$+\infty$]或NaN的输出 |latexmath:[$2^{31}-1$]
 |latexmath:[$2^{32}-1$] |latexmath:[$2^{63}-1$] |latexmath:[$2^{64}-1$]
 |===
 
-All floating-point conversion instructions set the Inexact exception
-flag if the rounded result differs from the operand value and the
-Invalid exception flag is not set.
+如果舍入后的结果与操作数值不同且未设置无效异常标志，则所有浮点转换指令都会设置不精确异常标志。
 
 include::images/wavedrom/spfloat-cn-cmp.adoc[]
 
 //.SP float convert and move
 
-Floating-point to floating-point sign-injection instructions, FSGNJ.S,
-FSGNJN.S, and FSGNJX.S, produce a result that takes all bits except the
-sign bit from _rs1_. For FSGNJ, the result's sign bit is _rs2_'s sign
-bit; for FSGNJN, the result's sign bit is the opposite of _rs2_'s sign
-bit; and for FSGNJX, the sign bit is the XOR of the sign bits of _rs1_
-and _rs2_. Sign-injection instructions do not set floating-point
-exception flags, nor do they canonicalize NaNs. Note, FSGNJ.S _rx, ry,
-ry_ moves _ry_ to _rx_ (assembler pseudoinstruction FMV.S _rx, ry_);
-FSGNJN.S _rx, ry, ry_ moves the negation of _ry_ to _rx_ (assembler
-pseudoinstruction FNEG.S _rx, ry_); and FSGNJX.S _rx, ry, ry_ moves the absolute value of _ry_ to _rx_ (assembler pseudoinstruction FABS.S _rx,
-ry_).
+浮点到浮点的符号注入指令FSGNJ.S、FSGNJN.S和FSGNJX.S生成一个结果，取_self_ 除符号位以外的所有位。 对于FSGNJ，结果的符号位是_rs2_的符号位；对于FSGNJN，结果的符号位是_rs2_的符号位的相反；对于FSGNJX，符号位是_rs1_和_rs2_符号位的异或。 符号注入指令不会设置浮点异常标志，也不会规范化NaN。 注意，FSGNJ.S _rx, ry, ry_将_ry_移动到_rx_（汇编伪指令FMV.S _rx, ry_）；FSGNJN.S _rx, ry, ry_将_ry_的否定移到_rx_（汇编伪指令FNEG.S _rx, ry_）；FSGNJX.S _rx, ry, ry_将_ry_的绝对值移到_rx_（汇编伪指令FABS.S _rx,
+ry_）。
 
 include::images/wavedrom/spfloat-sign-inj.adoc[]
 
 [[inj]]
 [NOTE]
 ====
-The sign-injection instructions provide floating-point MV, ABS, and NEG, as well as supporting a few other operations, including the IEEE
-copySign operation and sign manipulation in transcendental math function libraries. Although MV, ABS, and NEG only need a single register operand, whereas FSGNJ instructions need two, it is unlikely most microarchitectures would add optimizations to benefit from the reduced number of register reads for these relatively infrequent instructions. Even in this case, a microarchitecture can simply detect when both source registers are the same for FSGNJ instructions and only read a single copy.
+符号注入指令提供浮点MV、ABS和NEG，还支持其他一些操作，包括IEEE的copySign操作和超越数学函数库中的符号操作。 虽然MV、ABS和NEG只需要单个寄存器操作数，而FSGNJ指令需要两个，但大多数微架构不太可能通过减少寄存器读取的数量来优化这些相对罕见的指令。 即使在这种情况下，微架构也可以简单地检测FSGNJ指令的两个源寄存器是否相同，只需读取一个副本。
 ====
 
-Instructions are provided to move bit patterns between the
-floating-point and integer registers. FMV.X.W moves the single-precision value in floating-point register _rs1_ represented in IEEE 754-2008 encoding to the lower 32 bits of integer register _rd_. The bits are not modified in the transfer, and in particular, the payloads of non-canonical NaNs are preserved. For RV64, the higher 32 bits of the destination register are filled with copies of the floating-point number's sign bit.
+提供指令在浮点和整数寄存器之间移动位模式。 FMV.X.W将IEEE 754-2008编码表示的单精度值从浮点寄存器_rs1_移动到整数寄存器_rd_的低32位。 在传输中位不会被修改，特别是非规范NaN的有效负载被保留。 对于RV64，目标寄存器的高32位填充为浮点数的符号位的副本。
 
-FMV.W.X moves the single-precision value encoded in IEEE 754-2008
-standard encoding from the lower 32 bits of integer register _rs1_ to
-the floating-point register _rd_. The bits are not modified in the
-transfer, and in particular, the payloads of non-canonical NaNs are
-preserved.
+FMV.W.X将IEEE 754-2008标准编码的单精度值从整数寄存器_rs1_的低32位移动到浮点寄存器_rd_。 在传输中位不会被修改，特别是非规范NaN的有效负载被保留。
 
 [NOTE]
 ====
-The FMV.W.X and FMV.X.W instructions were previously called FMV.S.X and FMV.X.S. The use of W is more consistent with their semantics as an instruction that moves 32 bits without interpreting them. This became clearer after defining NaN-boxing. To avoid disturbing existing code, both the W and S versions will be supported by tools.
+FMV.W.X和FMV.X.W指令之前被称为FMV.S.X和FMV.X.S。 使用W更符合它们的语义，作为不解释32位的移动指令。 在定义NaN封装后这一点变得更明确。 为了不影响现有代码，工具将支持W和S版本。
 ====
 
 include::images/wavedrom/spfloat-mv.adoc[]
@@ -491,25 +347,14 @@ include::images/wavedrom/spfloat-mv.adoc[]
 
 [TIP]
 ====
-The base floating-point ISA was defined so as to allow implementations
-to employ an internal recoding of the floating-point format in registers to simplify handling of subnormal values and possibly to reduce functional unit latency. To this end, the F extension avoids
-representing integer values in the floating-point registers by defining conversion and comparison operations that read and write the integer register file directly. This also removes many of the common cases where explicit moves between integer and floating-point registers are required, reducing instruction count and critical paths for common mixed-format code sequences.
+基本浮点ISA被定义为允许实现采用浮点格式在寄存器中的内部重编码，以简化非正规值的处理并可能减少功能单元的延迟。 为此，F扩展通过定义读写整数寄存器文件的转换和比较操作避免在浮点寄存器中表示整数值。 这也消除了许多显式在整数和浮点寄存器之间移动的常见情况，减少了常见混合格式代码序列的指令数量和关键路径。
 ====
 
-=== Single-Precision Floating-Point Compare Instructions
+=== 单精度浮点比较指令
 
-Floating-point compare instructions (FEQ.S, FLT.S, FLE.S) perform the
-specified comparison between floating-point registers
-(latexmath:[$\mbox{\em rs1}
-= \mbox{\em rs2}$], latexmath:[$\mbox{\em rs1} < \mbox{\em rs2}$],
-latexmath:[$\mbox{\em rs1} \leq
-\mbox{\em rs2}$]) writing 1 to the integer register _rd_ if the
-condition holds, and 0 otherwise.
+浮点比较指令（FEQ.S、FLT.S、FLE.S）执行指定的浮点寄存器之间的比较（latexmath:[$\mbox{\em rs1} = \mbox{\em rs2}$], latexmath:[$\mbox{\em rs1} < \mbox{\em rs2}$], latexmath:[$\mbox{\em rs1} \leq \mbox{\em rs2}$]），如果条件成立，则向整数寄存器_rd_写入1，否则写入0。
 
-FLT.S and FLE.S perform what the IEEE 754-2008 standard refers to as
-_signaling_ comparisons: that is, they set the invalid operation
-exception flag if either input is NaN. FEQ.S performs a _quiet_
-comparison: it only sets the invalid operation exception flag if either input is a signaling NaN. For all three instructions, the result is 0 if either operand is NaN.
+FLT.S和FLE.S执行IEEE 754-2008标准所称的“信号”比较：即，如果任一输入是NaN，则设置无效操作异常标志。 FEQ.S执行一个“静默”比较：如果任一输入是信号NaN，则仅设置无效操作异常标志。 对于这三个指令，如果任一操作数是NaN，结果为0。
 
 include::images/wavedrom/spfloat-comp.adoc[]
 
@@ -517,22 +362,13 @@ include::images/wavedrom/spfloat-comp.adoc[]
 
 [NOTE]
 ====
-The F extension provides a latexmath:[$\leq$] comparison, whereas the
-base ISAs provide a latexmath:[$\geq$] branch comparison. Because
-latexmath:[$\leq$] can be synthesized from latexmath:[$\geq$] and
-vice-versa, there is no performance implication to this inconsistency,
-but it is nevertheless an unfortunate incongruity in the ISA.
+F扩展提供latexmath:[$\leq$]比较，而基本ISA提供latexmath:[$\geq$]分支比较。 因为latexmath:[$\leq$]可以从latexmath:[$\geq$]合成，反之亦然，所以这种不一致没有性能影响，但它仍然是ISA中的一个不幸的不一致。
 ====
 
-=== Single-Precision Floating-Point Classify Instruction
+=== 单精度浮点分类指令
 
-The FCLASS.S instruction examines the value in floating-point register
-_rs1_ and writes to integer register _rd_ a 10-bit mask that indicates
-the class of the floating-point number. The format of the mask is
-described in <<fclass>>. The corresponding bit in _rd_ will
-be set if the property is true and clear otherwise. All other bits in
-_rd_ are cleared. Note that exactly one bit in _rd_ will be set.
-FCLASS.S does not set the floating-point exception flags.
+FCLASS.S指令检查浮点寄存器_rs1_中的值，并向整数寄存器_rd_写入一个10位掩码，表示浮点数的类别。 掩码的格式在<<fclass>>中描述。 如果属性为真，_rd_中的相应位将被设置，否则清除。 _rd_中的所有其他位都被清除。 请注意，_rd_中只会设置一位。
+FCLASS.S不设置浮点异常标志。
 (((floating-point, classification)))
 
 include::images/wavedrom/spfloat-classify.adoc[]
@@ -540,28 +376,28 @@ include::images/wavedrom/spfloat-classify.adoc[]
 //.SP floating point classify
 
 [[fclass]]
-.Format of result of FCLASS instruction.
+.FCLASS指令结果的格式。
 [%autowidth, float="center", align="center", cols="^,<", options="header"]
 |===
-|_rd_ bit |Meaning
+|_rd_位 |含义
 
-|0 |_rs1_ is latexmath:[$-\infty$].
+|0 |_rs1_是latexmath:[$-\infty$]。
 
-|1 |_rs1_ is a negative normal number.
+|1 |_rs1_是负的正常数。
 
-|2 |_rs1_ is a negative subnormal number.
+|2 |_rs1_是负的次正常数。
 
-|3 |_rs1_ is latexmath:[$-0$].
+|3 |_rs1_是latexmath:[$-0$]。
 
-|4 |_rs1_ is latexmath:[$+0$].
+|4 |_rs1_是latexmath:[$+0$]。
 
-|5 |_rs1_ is a positive subnormal number.
+|5 |_rs1_是正的次正常数。
 
-|6 |_rs1_ is a positive normal number.
+|6 |_rs1_是正的正常数。
 
-|7 |_rs1_ is latexmath:[$+\infty$].
+|7 |_rs1_是latexmath:[$+\infty$]。
 
-|8 |_rs1_ is a signaling NaN.
+|8 |_rs1_是信号NaN。
 
-|9 |_rs1_ is a quiet NaN.
+|9 |_rs1_是安静的NaN。
 |===
