@@ -1,170 +1,93 @@
-== "D" Extension for Double-Precision Floating-Point, Version 2.2
+== "D" 扩展用于双精度浮点数，版本 2.2
 
-This chapter describes the standard double-precision floating-point
-instruction-set extension, which is named "D" and adds
-double-precision floating-point computational instructions compliant
-with the IEEE 754-2008 arithmetic standard. The D extension depends on
-the base single-precision instruction subset F.
-(((double-precision, floating point)))
-(((floating point, double precision)))
+本章介绍了标准双精度浮点指令集扩展，名为 "D"，它增加了符合 IEEE 754-2008 算术标准的双精度浮点计算指令。 D 扩展依赖于基础的单精度指令子集 F。
+(((双精度, 浮点)))
+(((浮点, 双精度)))
 
-=== D Register State
+=== D 寄存器状态
 
-The D extension widens the 32 floating-point registers, `f0-f31`, to
-64 bits (FLEN=64 in <<fprs>>. The `f` registers can
-now hold either 32-bit or 64-bit floating-point values as described
-below in <<nanboxing>>.
+D 扩展将 32 个浮点寄存器 `f0-f31` 扩展到 64 位（在 <<fprs>> 中 FLEN=64）。 `f` 寄存器现在可以容纳 32 位或 64 位浮点值，具体描述如下 <<nanboxing>>。
 
 [NOTE]
 ====
-FLEN can be 32, 64, or 128 depending on which of the F, D, and Q
-extensions are supported. There can be up to four different
-floating-point precisions supported, including H, F, D, and Q.
+FLEN 可以是 32、64 或 128，这取决于支持的 F、D 和 Q 扩展。 最多可以支持四种不同的浮点精度，包括 H、F、D 和 Q。
 ====
 
-(((floating-point, supported precisions)))
+(((浮点, 支持的精度)))
 
 [[nanboxing]]
-=== NaN Boxing of Narrower Values
+=== 窄值的 NaN 包装
 
-When multiple floating-point precisions are supported, then valid values
-of narrower _n_-bit types, _n_<FLEN, are represented in the lower _n_ bits of an FLEN-bit NaN value, in a process termed NaN-boxing. The upper bits of a valid NaN-boxed value must be all 1s. Valid NaN-boxed _n_-bit values
-therefore appear as negative quiet NaNs (qNaNs) when viewed as any wider
-_m_-bit value, _n_ < _m_ &#8804; FLEN. Any operation that writes a narrower result to an 'f' register must write all 1s to the uppermost FLEN-_n_ bits to yield a legal NaN-boxedvalue.
-(((floating-point, requirements)))
+当支持多种浮点精度时，较窄的 _n_-bit 类型的有效值，_n_<FLEN，通过 FLEN-bit NaN 值的低 _n_ 位表示，在这个过程中称为 NaN 包装。 有效的 NaN 包装值的高位必须全为 1。 因此，合法的 NaN 包装 _n_-bit 值在被视为任何更宽的 _m_-bit 值时表现为负静默 NaN（qNaN），_n_ < _m_ &#8804; FLEN。 任何将较窄结果写入 'f' 寄存器的操作都必须在上层 FLEN-_n_ 位写入全 1，以生成合法的 NaN 包装值。
+(((浮点, 要求)))
 
 [NOTE]
 ====
-Software might not know the current type of data stored in a
-floating-point register but has to be able to save and restore the
-register values, hence the result of using wider operations to transfer
-narrower values has to be defined. A common case is for callee-saved
-registers, but a standard convention is also desirable for features
-including varargs, user-level threading libraries, virtual machine
-migration, and debugging.
+软件可能不知道浮点寄存器中存储的数据的当前类型，但必须能够保存和恢复寄存器值，因此必须定义使用更广泛操作传输较窄值的结果。 一种常见情况是针对被调用者保存的寄存器，但也需要一种标准约定来支持包括可变参数、用户级线程库、虚拟机迁移和调试在内的功能。
 ====
 
-Floating-point _n_-bit transfer operations move external
-values held in IEEE standard formats into and out of the `f` registers,
-and comprise floating-point loads and stores (FL__n__/FS__n__) and floating-point move instructions (FMV._n_.X/FMV.X._n_). A narrower _n_-bit transfer, _n_<FLEN, into the `f` registers will create a valid NaN-boxed value. A narrower
-_n_-bit transfer out of the floating-point registers will
-transfer the lower _n_ bits of the register ignoring the
-upper FLEN-_n_ bits.
+浮点 _n_-bit 传输操作将IEEE 标准格式的外部值移入和移出 `f` 寄存器，并包括浮点加载和存储 (FL__n__/FS__n__) 以及浮点移动指令 (FMV._n_.X/FMV.X._n_)。 较窄的 _n_-bit 传输，_n_<FLEN，进入 `f` 寄存器会创建一个有效的 NaN 包装值。 从浮点寄存器出来的较窄 _n_-bit 传输将传输寄存器的低 _n_ 位而忽略上层 FLEN-_n_ 位。
 
-Apart from transfer operations described in the previous paragraph, all
-other floating-point operations on narrower __n__-bit
-operations, _n_<FLEN, check if the input operands are
-correctly NaN-boxed, i.e., all upper FLEN-_n_ bits are 1. If
-so, the _n_ least-significant bits of the input are used as
-the input value, otherwise the input value is treated as an
-_n_-bit canonical NaN.
+除了上一段描述的传输操作外，所有其他针对较窄 __n__-bit 操作，_n_<FLEN 的浮点操作都检查输入操作数是否正确地 NaN 包装，即所有上层 FLEN-_n_ 位为 1。 如果是，则使用输入的 _n_ 个最低有效位作为输入值，否则将输入值视为 _n_ 位规范 NaN。
 
 [TIP]
 ====
-Earlier versions of this document did not define the behavior of feeding
-the results of narrower or wider operands into an operation, except to
-require that wider saves and restores would preserve the value of a
-narrower operand. The new definition removes this
-implementation-specific behavior, while still accommodating both
-non-recoded and recoded implementations of the floating-point unit. The
-new definition also helps catch software errors by propagating NaNs if
-values are used incorrectly.
+本文件的早期版本没有定义将较窄或较宽操作数的结果引入操作的行为，除了要求较宽的保存和恢复将保留较窄操作数的值。 新的定义消除了这种特定于实现的行为，同时仍然适应浮点单元的非重编码和重编码实现。 新的定义还通过在使用值不正确时传播 NaN，帮助捕捉软件错误。
 
-Non-recoded implementations unpack and pack the operands to IEEE
-standard format on the input and output of every floating-point
-operation. The NaN-boxing cost to a non-recoded implementation is
-primarily in checking if the upper bits of a narrower operation
-represent a legal NaN-boxed value, and in writing all 1s to the upper
-bits of a result.
+非重编码实现会在每次浮点操作的输入和输出时将操作数解包并重新打包为 IEEE 标准格式。 对于非重编码实现，NaN 包装的成本主要在于检查较窄运算的上层位是否代表一个合法的 NaN 包装值，以及在结果的上层位写入全 1。
 
-Recoded implementations use a more convenient internal format to
-represent floating-point values, with an added exponent bit to allow all
-values to be held normalized. The cost to the recoded implementation is
-primarily the extra tagging needed to track the internal types and sign
-bits, but this can be done without adding new state bits by recoding
-NaNs internally in the exponent field. Small modifications are needed to
-the pipelines used to transfer values in and out of the recoded format,
-but the datapath and latency costs are minimal. The recoding process has
-to handle shifting of input subnormal values for wide operands in any
-case, and extracting the NaN-boxed value is a similar process to
-normalization except for skipping over leading-1 bits instead of
-skipping over leading-0 bits, allowing the datapath muxing to be shared.
+重编码实现使用更便捷的内部格式表示浮点值，增加了一个指数位以允许所有值保持标准化。 重编码实现的成本主要在于跟踪内部类型和符号位所需的额外标记，但这可以通过在指数字段内部重新编码 NaN 来完成而不增加新的状态位。 对用于在重编码格式中传输值的管道进行小修改，但数据路径和延迟成本是最小的。 重编码过程必须处理宽操作数输入亚正规值的移位，提取 NaN 包装值的过程与标准化类似，只是跳过前导 1 位而不是跳过前导 0 位，允许数据路径复用共享。
 ====
 
 [[fld_fsd]]
-=== Double-Precision Load and Store Instructions
+=== 双精度负载和存储指令
 
-The FLD instruction loads a double-precision floating-point value from
-memory into floating-point register _rd_. FSD stores a double-precision
-value from the floating-point registers to memory.
-(((floating point, load and store)))
+FLD 指令从存储器中加载双精度浮点值到浮点寄存器 _rd_。 FSD 从浮点寄存器存储双精度值到存储器中。
+(((浮点, 加载和存储)))
 
 [NOTE]
 ====
-The double-precision value may be a NaN-boxed single-precision value.
+双精度值可以是 NaN 包装的单精度值。
 ====
 
 include::images/wavedrom/double-ls.adoc[]
 
 //.Double-precision load and store
 
-FLD and FSD are only guaranteed to execute atomically if the effective
-address is naturally aligned and XLEN&#8805;64.
+FLD 和 FSD 仅在有效地址自然对齐且 XLEN&#8805;64 时保证原子执行。
 
-FLD and FSD do not modify the bits being transferred; in particular, the
-payloads of non-canonical NaNs are preserved.
+FLD 和 FSD 不会修改正在传输的位；特别是，非规范 NaN 的有效载荷会被保留。
 
-=== Double-Precision Floating-Point Computational Instructions
+=== 双精度浮点计算指令
 
-The double-precision floating-point computational instructions are
-defined analogously to their single-precision counterparts, but operate
-on double-precision operands and produce double-precision results.
+双精度浮点计算指令与其单精度对应物相似，但对双精度操作数进行操作并生成双精度结果。
 
 include::images/wavedrom/double-fl-compute.adoc[]
 
 //.Double-precision float computational
 
-=== Double-Precision Floating-Point Conversion and Move Instructions
+=== 双精度浮点转换和移动指令
 
-Floating-point-to-integer and integer-to-floating-point conversion
-instructions are encoded in the OP-FP major opcode space. FCVT.W.D or
-FCVT.L.D converts a double-precision floating-point number in
-floating-point register _rs1_ to a signed 32-bit or 64-bit integer,
-respectively, in integer register _rd_. FCVT.D.W or FCVT.D.L converts a
-32-bit or 64-bit signed integer, respectively, in integer register _rs1_
-into a double-precision floating-point number in floating-point register
-_rd_. FCVT.WU.D, FCVT.LU.D, FCVT.D.WU, and FCVT.D.LU variants convert to
-or from unsigned integer values. For RV64, FCVT.W[U].D sign-extends the
-32-bit result. FCVT.L[U].D and FCVT.D.L[U] are RV64-only instructions.
-The range of valid inputs for FCVT._int_.D and the behavior for invalid
-inputs are the same as for FCVT._int_.S.
-(((floating point, convert and move)))
+浮点到整数和整数到浮点转换指令在 OP-FP 主操作码空间中编码。 FCVT.W.D 或 FCVT.L.D 将浮点寄存器 _rs1_ 中的双精度浮点数转换为有符号的 32 位或 64 位整数，分别在整数寄存器 _rd_ 中。 FCVT.D.W 或 FCVT.D.L 将一个 32 位或 64 位有符号整数，分别在整数寄存器 _rs1_ 中，转换为浮点寄存器 _rd_ 中的双精度浮点数。 FCVT.WU.D、FCVT.LU.D、FCVT.D.WU 和 FCVT.D.LU 变体从或转换为无符号整数值。 对于 RV64，FCVT.W[U].D 进行符号扩展以生成 32 位结果。 FCVT.L[U].D 和 FCVT.D.L[U] 是 RV64 专用指令。
+FCVT._int_.D 的有效输入范围及无效输入的行为与 FCVT._int_.S 相同。
+(((浮点, 转换和移动)))
 
-All floating-point to integer and integer to floating-point conversion
-instructions round according to the _rm_ field. Note FCVT.D.W[U] always
-produces an exact result and is unaffected by rounding mode.
+所有浮点到整数和整数到浮点的转换指令根据 _rm_ 字段进行舍入。 注意 FCVT.D.W[U] 总是产生精确结果，且不受舍入模式影响。
 
 include::images/wavedrom/double-fl-convert-mv.adoc[]
 
 //.Double-precision float convert and move
 
-The double-precision to single-precision and single-precision to
-double-precision conversion instructions, FCVT.S.D and FCVT.D.S, are
-encoded in the OP-FP major opcode space and both the source and
-destination are floating-point registers. The _rs2_ field encodes the
-datatype of the source, and the _fmt_ field encodes the datatype of the
-destination. FCVT.S.D rounds according to the RM field; FCVT.D.S will
-never round.
-(((double-precision, to single-precision)))
-(((single-precision, to double-precision )))
+从双精度到单精度和从单精度到
+双精度的转换指令，FCVT.S.D 和 FCVT.D.S，在 OP-FP 主操作码空间中编码，源和目标都是浮点寄存器。 _rs2_ 字段编码源的数据类型，而 _fmt_ 字段编码目标的数据类型。 FCVT.S.D 根据 RM 字段进行舍入；FCVT.D.S 永远不进行舍入。
+(((双精度, 单精度)))
+(((单精度, 双精度)))
 
 include::images/wavedrom/fcvt-sd-ds.adoc[]
 
 //.Double-precision FCVT.S.D and FCVT.D.S
 
-Floating-point to floating-point sign-injection instructions, FSGNJ.D,
-FSGNJN.D, and FSGNJX.D are defined analogously to the single-precision
-sign-injection instruction.
+浮点到浮点符号注入指令 FSGNJ.D、FSGNJN.D 和 FSGNJX.D 定义类似于单精度符号注入指令。
 
 //FSGNJ.D, FSGNJN.D, and FSGNJX.D
 
@@ -172,16 +95,9 @@ include::images/wavedrom/fsjgnjnx-d.adoc[]
 
 //.Double-precision sign-injection
 
-For XLEN&#8805;64 only, instructions are provided to move bit
-patterns between the floating-point and integer registers. FMV.X.D moves
-the double-precision value in floating-point register _rs1_ to a
-representation in IEEE 754-2008 standard encoding in integer register
-_rd_. FMV.D.X moves the double-precision value encoded in IEEE 754-2008
-standard encoding from the integer register _rs1_ to the floating-point
-register _rd_.
+仅对 XLEN&#8805;64 提供指令，以便在浮点寄存器和整数寄存器之间移动位模式。 FMV.X.D 将浮点寄存器 _rs1_ 中的双精度值移动到整数寄存器 _rd_ 中，以 IEEE 754-2008 标准编码表示。 FMV.D.X 将整数寄存器 _rs1_ 中以 IEEE 754-2008 标准编码表示的双精度值移动到浮点寄存器 _rd_。
 
-FMV.X.D and FMV.D.X do not modify the bits being transferred; in
-particular, the payloads of non-canonical NaNs are preserved.
+FMV.X.D 和 FMV.D.X 不修改正在传输的位；特别是，非规范 NaN 的有效载荷会被保留。
 
 include::images/wavedrom/d-xwwx.adoc[]
 
@@ -189,44 +105,25 @@ include::images/wavedrom/d-xwwx.adoc[]
 
 [TIP]
 ====
-Early versions of the RISC-V ISA had additional instructions to allow
-RV32 systems to transfer between the upper and lower portions of a
-64-bit floating-point register and an integer register. However, these
-would be the only instructions with partial register writes and would
-add complexity in implementations with recoded floating-point or
-register renaming, requiring a pipeline read-modify-write sequence.
-Scaling up to handling quad-precision for RV32 and RV64 would also
-require additional instructions if they were to follow this pattern. The
-ISA was defined to reduce the number of explicit int-float register
-moves, by having conversions and comparisons write results to the
-appropriate register file, so we expect the benefit of these
-instructions to be lower than for other ISAs.
+RISC-V ISA 的早期版本提供了额外的指令，允许 RV32 系统在 64 位浮点寄存器的上下部分与整数寄存器之间进行传输。 然而，这将是唯一具有部分寄存器写入的指令，并且在重编码浮点或寄存器重命名的实现中会增加复杂性，需要执行管道读-修改-写序列。
+若要遵循此模式，扩展到处理 RV32 和 RV64 的四重精度也需要额外的指令。 ISA 被定义为减少显式整数-浮点寄存器移动的数量，通过使转换和比较将结果写入到适当的寄存器文件中，因此我们预计这些指令的收益低于其他 ISA。
 
-We note that for systems that implement a 64-bit floating-point unit
-including fused multiply-add support and 64-bit floating-point loads and
-stores, the marginal hardware cost of moving from a 32-bit to a 64-bit
-integer datapath is low, and a software ABI supporting 32-bit wide
-address-space and pointers can be used to avoid growth of static data
-and dynamic memory traffic.
+我们注意到，对于实现 64 位浮点单元的系统，包括融合乘加支持和 64 位浮点加载和存储，从 32 位整数数据路径扩展到 64 位的边际硬件成本很低，而软件 ABI 支持 32 位宽地址空间和指针可以用于避免静态数据和动态内存流量的增长。
 ====
 
-=== Double-Precision Floating-Point Compare Instructions
+=== 双精度浮点比较指令
 
-The double-precision floating-point compare instructions are defined
-analogously to their single-precision counterparts, but operate on
-double-precision operands.
-(((floating-point, compare)))
+双精度浮点比较指令的定义类似于其单精度对应物，但对双精度操作数进行操作。
+(((浮点, 比较)))
 
 include::images/wavedrom/double-fl-compare.adoc[]
 
 //.Double-precision float compare
 
-=== Double-Precision Floating-Point Classify Instruction
+=== 双精度浮点分类指令
 
-The double-precision floating-point classify instruction, FCLASS.D, is
-defined analogously to its single-precision counterpart, but operates on
-double-precision operands.
-(((floating-point, classify)))
+双精度浮点分类指令 FCLASS.D 的定义类似于其单精度对应物，但操作于双精度操作数。
+(((浮点, 分类)))
 
 include::images/wavedrom/double-fl-class.adoc[]
 
