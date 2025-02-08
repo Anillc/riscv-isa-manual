@@ -37,7 +37,7 @@ ASCIIDOCTOR_OPTS := -a compress \
                     --trace
 
 # Source directory
-SRCDIR := ../src
+SRCDIR := ../src_zh
 
 # Temporary files to clean up for LaTeX build
 JUNK := *.pdf *.aux *.log *.bbl *.blg *.toc *.out *.fdb_latexmk *.fls *.synctex.gz
