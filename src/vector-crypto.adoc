@@ -580,15 +580,10 @@ in the Zvbb extension: vbrev.v, vclz.v, vctz.v, vcpop.v, and vwsll.[vv,vx,vi].
 |Instruction
 
 | vandn.[vv,vx]      | <<insns-vandn>>
-// | vbrev.v            | <<insns-vbrev>>
 | vbrev8.v           | <<insns-vbrev8>>
 | vrev8.v            | <<insns-vrev8>>
-// | vclz.v             | <<insns-vclz>>
-// | vctz.v             | <<insns-vctz>>
-// | vcpop.v            | <<insns-vcpop>>
 | vrol.[vv,vx]       | <<insns-vrol>>
 | vror.[vv,vx,vi]    | <<insns-vror>>
-// | vwsll.[vv,vx,vi]   | <<insns-vwsll>>
 |===
 
 <<<
@@ -743,13 +738,10 @@ Likewise, `vstart` must be a multiple of `EGS=4`.
 [%autowidth]
 [%header,cols="2,4"]
 |===
-// |`VLENmin`
 |Mnemonic
 |Instruction
 
-// | 128
 | vsha2ms.vv   | <<insns-vsha2ms>>
-// | 128
 | vsha2c[hl].vv    | <<insns-vsha2c>>
 |===
 
@@ -866,9 +858,7 @@ This extension is shorthand for the following set of other extensions:
 
 | Zvkned  | <<Zvkned>>
 | Zvknhb  | <<zvknh,Zvknhb>>
-// | Zvbb    | <<Zvbb>>
 | Zvkb    | <<Zvkb>>
-// | Zvbc    | <<Zvbc>>
 | Zvkt    | <<Zvkt>>
 |===
 
@@ -941,9 +931,7 @@ This extension is shorthand for the following set of other extensions:
 
 | Zvksed  | <<Zvksed>>
 | Zvksh   | <<Zvksh>>
-// | Zvbb    | <<Zvbb>>
 | Zvkb    | <<Zvkb>>
-// | Zvbc    | <<Zvbc>>
 | Zvkt    | <<Zvkt>>
 |===
 
@@ -1196,6 +1184,8 @@ vaesdf.vv vd, vs2 +
 vaesdf.vs vd, vs2
 
 Encoding (Vector-Vector)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1210,6 +1200,8 @@ Encoding (Vector-Vector)::
 ....
 
 Encoding (Vector-Scalar)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1227,6 +1219,7 @@ Reserved Encodings::
 * Only for the `.vs` form: the `vd` register group overlaps the `vs2` scalar element group
 
 Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2,2,2,2"]
@@ -1256,6 +1249,8 @@ on the data being operated upon.
 //  if( ((vl%EGS)<>0) | ((vstart%EGS)<>0) | (LMUL*VLEN < EGW))  then {
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (VAESDF(vs2, vd, suffix)) = {
@@ -1297,6 +1292,8 @@ vaesdm.vv vd, vs2 +
 vaesdm.vs vd, vs2
 
 Encoding (Vector-Vector)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1311,6 +1308,8 @@ Encoding (Vector-Vector)::
 ....
 
 Encoding (Vector-Scalar)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1328,6 +1327,7 @@ Reserved Encodings::
 * Only for the `.vs` form: the `vd` register group overlaps the `vs2` scalar element group
 
 Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2,2,2,2"]
@@ -1361,6 +1361,8 @@ on the data being operated upon.
 // Likewise, `vstart` must be a multiple of `EGS=4`.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (VAESDM(vs2, vd, suffix)) = {
@@ -1403,6 +1405,8 @@ vaesef.vv vd, vs2 +
 vaesef.vs vd, vs2
 
 Encoding (Vector-Vector)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1417,6 +1421,8 @@ Encoding (Vector-Vector)::
 ....
 
 Encoding (Vector-Scalar)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1434,6 +1440,7 @@ Reserved Encodings::
 * Only for the `.vs` form: the `vd` register group overlaps the `vs2` scalar element group
 
 Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2,2,2,2"]
@@ -1467,6 +1474,8 @@ on the data being operated upon.
 
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (VAESEF(vs2, vd, suffix) = {
@@ -1508,6 +1517,8 @@ vaesem.vv vd, vs2 +
 vaesem.vs vd, vs2
 
 Encoding (Vector-Vector)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1522,6 +1533,8 @@ Encoding (Vector-Vector)::
 ....
 
 Encoding (Vector-Scalar)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1540,6 +1553,7 @@ Reserved Encodings::
 
 
 Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2,2,2,2"]
@@ -1572,6 +1586,8 @@ on the data being operated upon.
 // Likewise, `vstart` must be a multiple of `EGS=4`.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (VAESEM(vs2, vd, suffix)) = {
@@ -1613,6 +1629,8 @@ Mnemonic::
 vaeskf1.vi vd, vs2, uimm
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1629,6 +1647,7 @@ Reserved Encodings::
 * `SEW` is any value other than 32
 
 Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2,2,2,2"]
@@ -1683,6 +1702,8 @@ behavior to be fully defined for all values of `uimm[4:0]` with minimal extra lo
 
 
 Operation::
+xxx
+
 [source,Sail]
 --
 function clause execute (VAESKF1(rnd, vd, vs2)) = {
@@ -1729,6 +1750,8 @@ Mnemonic::
 vaeskf2.vi vd, vs2, uimm
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1745,6 +1768,7 @@ Reserved Encodings::
 * `SEW` is any value other than 32
 
 Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2,2,2,2"]
@@ -1795,6 +1819,8 @@ behavior to be fully defined for all values of `uimm[4:0]` with minimal extra lo
 // Likewise, `vstart` must be a multiple of `EGS=4`.
 
 Operation::
+xxx
+
 [source,Sail]
 --
 function clause execute (VAESKF2(rnd, vd, vs2)) = {
@@ -1842,6 +1868,8 @@ Mnemonic::
 vaesz.vs vd, vs2
 
 Encoding (Vector-Scalar)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1859,6 +1887,7 @@ Reserved Encodings::
 * The `vd` register group overlaps the `vs2` register
 
 Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2,2,2,2"]
@@ -1903,6 +1932,8 @@ This instruction only exists in the `.vs` form because the `.vv` form would be i
 // Likewise, `vstart` must be a multiple of `EGS=4`.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (VAESZ(vs2, vd) = {
@@ -1941,6 +1972,8 @@ vandn.vv vd, vs2, vs1, vm +
 vandn.vx vd, vs2, rs1, vm
 
 Encoding (Vector-Vector)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1955,6 +1988,8 @@ Encoding (Vector-Vector)::
 ....
 
 Encoding (Vector-Scalar)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1969,6 +2004,7 @@ Encoding (Vector-Scalar)::
 ....
 
 Vector-Vector Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2"]
@@ -1983,6 +2019,7 @@ Vector-Vector Arguments::
 |===
 
 Vector-Scalar Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2"]
@@ -2022,6 +2059,8 @@ of the immediate value with the `vand.vi` instruction.
 ====
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (VANDN(vs2, vs1, vd, suffix)) = {
@@ -2054,6 +2093,8 @@ Mnemonic::
 vbrev.v vd, vs2, vm
 
 Encoding (Vector)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2068,6 +2109,7 @@ Encoding (Vector)::
 ....
 
 Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2"]
@@ -2084,6 +2126,8 @@ Description::
 A bit reversal is performed on the bits of each element.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (VBREV(vs2)) = {
@@ -2114,6 +2158,8 @@ Mnemonic::
 vbrev8.v vd, vs2, vm
 
 Encoding (Vector)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2128,6 +2174,7 @@ Encoding (Vector)::
 ....
 
 Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2"]
@@ -2153,6 +2200,8 @@ This byte-wise instruction is defined for all SEWs to eliminate the need to chan
 ====
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (VBREV8(vs2)) = {
@@ -2185,6 +2234,8 @@ vclmul.vv vd, vs2, vs1, vm +
 vclmul.vx vd, vs2, rs1, vm
 
 Encoding (Vector-Vector)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2199,6 +2250,8 @@ Encoding (Vector-Vector)::
 ....
 
 Encoding (Vector-Scalar)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2215,6 +2268,7 @@ Reserved Encodings::
 * `SEW` is any value other than 64
 
 Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2"]
@@ -2248,6 +2302,8 @@ vector carryless multiplication instructions.
 ====
 
 Operation::
+xxx
+
 [source,sail]
 --
 
@@ -2289,6 +2345,8 @@ vclmulh.vv vd, vs2, vs1, vm +
 vclmulh.vx vd, vs2, rs1, vm
 
 Encoding (Vector-Vector)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2303,6 +2361,8 @@ Encoding (Vector-Vector)::
 ....
 
 Encoding (Vector-Scalar)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2319,6 +2379,7 @@ Reserved Encodings::
 * `SEW` is any value other than 64
 
 Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2"]
@@ -2344,6 +2405,8 @@ significant 64 bits of the carry-less product.
 // on the data being operated upon.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (VCLMULH(vs2, vs1, vd, suffix)) = {
@@ -2383,6 +2446,8 @@ Mnemonic::
 vclz.v vd, vs2, vm
 
 Encoding (Vector)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2397,6 +2462,7 @@ Encoding (Vector)::
 ....
 
 Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2"]
@@ -2415,6 +2481,8 @@ A leading zero count is performed on each element.
 The result for zero-valued inputs is the value SEW.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (VCLZ(vs2)) = {
@@ -2442,6 +2510,8 @@ Mnemonic::
 vcpop.v vd, vs2, vm
 
 Encoding (Vector)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2456,6 +2526,7 @@ Encoding (Vector)::
 ....
 
 Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2"]
@@ -2472,6 +2543,8 @@ Description::
 A population count is performed on each element.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (VCPOP(vs2)) = {
@@ -2500,6 +2573,8 @@ Mnemonic::
 vctz.v vd, vs2, vm
 
 Encoding (Vector)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2514,6 +2589,7 @@ Encoding (Vector)::
 ....
 
 Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2"]
@@ -2532,6 +2608,8 @@ A trailing zero count is performed on each element.
 // The result for zero-valued inputs is the value SEW.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (VCTZ(vs2)) = {
@@ -2561,6 +2639,8 @@ Mnemonic::
 vghsh.vv vd, vs2, vs1
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2577,6 +2657,7 @@ Reserved Encodings::
 * `SEW` is any value other than 32 
 
 Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2,2,2,2"]
@@ -2635,6 +2716,8 @@ a future extension might define a vector-scalar version of this instruction wher
 ====
 
 Operation::
+xxx
+
 [source,pseudocode]
 --
 function clause execute (VGHSH(vs2, vs1, vd)) = {
@@ -2689,6 +2772,8 @@ Mnemonic::
 vgmul.vv vd, vs2
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2705,6 +2790,7 @@ Reserved Encodings::
 * `SEW` is any value other than 32 
 
 Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2,2,2,2"]
@@ -2766,6 +2852,8 @@ doesn't use the add-multiply form of the `vghsh.vv` instruction.
 
 
 Operation::
+xxx
+
 [source,pseudocode]
 --
 function clause execute (VGMUL(vs2, vs1, vd)) = {
@@ -2817,6 +2905,8 @@ Mnemonic::
 vrev8.v vd, vs2, vm
 
 Encoding (Vector)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2831,6 +2921,7 @@ Encoding (Vector)::
 ....
 
 Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2"]
@@ -2855,6 +2946,8 @@ This element-wise endian swapping is needed for several cryptographic algorithms
 ====
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (VREV8(vs2)) = {
@@ -2888,6 +2981,8 @@ vrol.vv vd, vs2, vs1, vm +
 vrol.vx vd, vs2, rs1, vm +
 
 Encoding (Vector-Vector)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2902,6 +2997,8 @@ Encoding (Vector-Vector)::
 ....
 
 Encoding (Vector-Scalar)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2916,6 +3013,7 @@ Encoding (Vector-Scalar)::
 ....
 
 Vector-Vector Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2"]
@@ -2930,6 +3028,7 @@ Vector-Vector Arguments::
 |===
 
 Vector-Scalar Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2"]
@@ -2962,6 +3061,8 @@ the rotate amount and using the immediate form of rotate right instruction (i.e.
 ====
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (VROL_VV(vs2, vs1, vd)) = {
@@ -3002,6 +3103,8 @@ vror.vx vd, vs2, rs1, vm +
 vror.vi vd, vs2, uimm, vm
 
 Encoding (Vector-Vector)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -3016,6 +3119,8 @@ Encoding (Vector-Vector)::
 ....
 
 Encoding (Vector-Scalar)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -3030,6 +3135,8 @@ Encoding (Vector-Scalar)::
 ....
 
 Encoding (Vector-Immediate)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -3045,6 +3152,7 @@ Encoding (Vector-Immediate)::
 ....
 
 Vector-Vector Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2"]
@@ -3059,6 +3167,7 @@ Vector-Vector Arguments::
 |===
 
 Vector-Scalar/Immediate Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2"]
@@ -3086,6 +3195,8 @@ bits are ignored.
 // on the data being operated upon.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (VROR_VV(vs2, vs1, vd)) = {
@@ -3133,6 +3244,8 @@ vsha2ch.vv vd, vs2, vs1 +
 vsha2cl.vv vd, vs2, vs1
 
 Encoding (Vector-Vector) High part::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -3147,6 +3260,8 @@ Encoding (Vector-Vector) High part::
 ....
 
 Encoding (Vector-Vector) Low part::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -3165,6 +3280,7 @@ Reserved Encodings::
 * The `vd` register group overlaps with either `vs1` or `vs2`
 
 Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2,2,2,2"]
@@ -3262,6 +3378,8 @@ that `vd`, `vs1` and `vs2` each are different registers.
 // Likewise, `vstart` must be a multiple of `EGS=4`.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (VSHA2c(vs2, vs1, vd)) = {
@@ -3345,6 +3463,8 @@ Mnemonic::
 vsha2ms.vv vd, vs2, vs1
 
 Encoding (Vector-Vector)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -3362,6 +3482,7 @@ Reserved Encodings::
 * `zvknhb`: `SEW` is any value other than 32 or 64
 * The `vd` register group overlaps with either `vs1` or `vs2`
 Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2,2,2,2"]
@@ -3456,7 +3577,6 @@ that `vd`, `vs1` and `vs2` each contain different portions of the message schedu
 // There are three source operands: `vd`, `vs1` and `vs2`. The result
 // is written to `vd`.
 
-// NB:: for implementations with `VLEN < EGW`, the minimal `VLMUL` is `EGW / VLEN`.
 
 // In this code the input elements are numbered from 0 (16 words ago) to 15 (most recent message-schedule word).
 // The outputs are numbered from 16 to 19.
@@ -3467,6 +3587,8 @@ that `vd`, `vs1` and `vs2` each contain different portions of the message schedu
 // Likewise, `vstart` must be a multiple of `EGS=4`.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (VSHA2ms(vs2, vs1, vd)) = {
@@ -3530,6 +3652,8 @@ Mnemonic::
 vsm3c.vi vd, vs2, uimm
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -3547,6 +3671,7 @@ Reserved Encodings::
 * The `vd` register group overlaps with the `vs2` register group
 
 Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2,2,2,2"]
@@ -3618,6 +3743,8 @@ that `vd` and `vs2` each are different registers.
 // Likewise, `vstart` must be a multiple of `EGS=8`.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (VSM3C(rnds, vs2, vd)) = {
@@ -3723,6 +3850,8 @@ Mnemonic::
 vsm3me.vv vd, vs2, vs1
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -3740,6 +3869,7 @@ Reserved Encodings::
 * The `vd` register group overlaps with the `vs2` register group.
 
 Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2,2,2,2"]
@@ -3793,6 +3923,8 @@ values to be preserved for generating the next 8 words.
 ====
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (VSM3ME(vs2, vs1)) = {
@@ -3875,6 +4007,8 @@ Mnemonic::
 vsm4k.vi vd, vs2, uimm
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -3891,6 +4025,7 @@ Reserved Encodings::
 * `SEW` is any value other than 32
 
 Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2,2,2,2"]
@@ -4012,6 +4147,8 @@ Since the results are all limited to 8 bits, the modulo operation occurs for fre
 ////
 
 Operation::
+xxx
+
 [source,sail]
 --
 
@@ -4093,6 +4230,8 @@ vsm4r.vv vd, vs2 +
 vsm4r.vs vd, vs2
 
 Encoding (Vector-Vector)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -4107,6 +4246,8 @@ Encoding (Vector-Vector)::
 ....
 
 Encoding (Vector-Scalar)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -4124,6 +4265,7 @@ Reserved Encodings::
 * Only for the `.vs` form: the `vd` register group overlaps the `vs2` register
 
 Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2,2,2,2"]
@@ -4172,6 +4314,8 @@ previous four rounds.
 // Likewise, `vstart` must be a multiple of `EGS=4`.
 
 Operation::
+xxx
+
 [source,pseudocode]
 --
 function clause execute (VSM4R(vd, vs2)) = {
@@ -4251,6 +4395,8 @@ vwsll.vx vd, vs2, rs1, vm +
 vwsll.vi vd, vs2, uimm, vm
 
 Encoding (Vector-Vector)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -4265,6 +4411,8 @@ Encoding (Vector-Vector)::
 ....
 
 Encoding (Vector-Scalar)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -4279,6 +4427,8 @@ Encoding (Vector-Scalar)::
 ....
 
 Encoding (Vector-Immediate)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -4293,6 +4443,7 @@ Encoding (Vector-Immediate)::
 ....
 
 Vector-Vector Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2"]
@@ -4307,6 +4458,7 @@ Vector-Vector Arguments::
 |===
 
 Vector-Scalar/Immediate Arguments::
+xxx
 
 [%autowidth]
 [%header,cols="4,2,2,2"]
@@ -4333,6 +4485,8 @@ Only the low log2(2*`SEW`) bits of the shift-amount value are used, all other
 bits are ignored.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (VWSLL_VV(vs2, vs1, vd)) = {

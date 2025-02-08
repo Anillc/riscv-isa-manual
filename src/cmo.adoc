@@ -869,6 +869,8 @@ Mnemonic::
 cbo.clean _offset_(_base_)
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -889,6 +891,8 @@ zero. The instruction operates on the set of coherent caches accessed by the
 agent executing the instruction.
 
 Operation::
+xxx
+
 [source,sail]
 --
 TODO
@@ -904,6 +908,8 @@ Mnemonic::
 cbo.flush _offset_(_base_)
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -924,6 +930,8 @@ zero. The instruction operates on the set of coherent caches accessed by the
 agent executing the instruction.
 
 Operation::
+xxx
+
 [source,sail]
 --
 TODO
@@ -939,6 +947,8 @@ Mnemonic::
 cbo.inval _offset_(_base_)
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -961,6 +971,8 @@ the instruction may perform a flush operation instead of an invalidate
 operation.
 
 Operation::
+xxx
+
 [source,sail]
 --
 TODO
@@ -976,6 +988,8 @@ Mnemonic::
 cbo.zero _offset_(_base_)
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -996,6 +1010,8 @@ that computes the offset shall evaluate to zero. An implementation may or may
 not update the entire set of bytes atomically.
 
 Operation::
+xxx
+
 [source,sail]
 --
 TODO
@@ -1012,6 +1028,8 @@ Mnemonic::
 prefetch.i _offset_(_base_)
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1039,6 +1057,8 @@ this behavior is not required._
 ====
 
 Operation::
+xxx
+
 [source,sail]
 --
 TODO
@@ -1055,6 +1075,8 @@ Mnemonic::
 prefetch.r _offset_(_base_)
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1082,6 +1104,8 @@ behavior is not required._
 ====
 
 Operation::
+xxx
+
 [source,sail]
 --
 TODO
@@ -1098,6 +1122,8 @@ Mnemonic::
 prefetch.w _offset_(_base_)
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1125,6 +1151,8 @@ behavior is not required._
 ====
 
 Operation::
+xxx
+
 [source,sail]
 --
 TODO

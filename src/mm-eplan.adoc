@@ -91,7 +91,6 @@ particular valid or invalid execution on the right.
 !===
 |
 !===
-//a! graphviz::images/graphviz/litmus_sample.txt[]
 a! image::graphviz/litmus_sample.png[]
 !===
 |===
@@ -258,7 +257,6 @@ store buffers, it is possible to arrive at the final outcome a0=1, `a1=0, a2=1, 
 !===
 |
 !===
-//a! graphviz::images/graphviz/litmus_sb_fwd.txt[]
 a! image::graphviz/litmus_sb_fwd.png[]
 !===
 |===
@@ -338,7 +336,6 @@ program order. Likewise for (e) and (f).
 !===
 |
 !===
-//a! graphviz::images/graphviz/litmus_ppoca.txt[]
 a! image::graphviz/litmus_ppoca.png[]
 !===
 |===
@@ -523,7 +520,6 @@ indirection.
 !===
 |
 !===
-//a! graphviz::images/graphviz/litmus_mp_fenceww_fri_rfi_addr.txt[]
 a! image::graphviz/litmus_mp_fenceww_fri_rfi_addr.png[]
 !===
 |===
@@ -580,7 +576,6 @@ write the same value.
 !===
 |
 !===
-//a! graphviz::images/graphviz/litmus_rsw.txt[]
 a! image::graphviz/litmus_rsw.png[]
 !===
 |===
@@ -950,7 +945,6 @@ no effect on the global memory order.
 !===
 |
 !===
-//a! graphviz::images/graphviz/litmus_lb_lrsc.txt[]
 a! image::graphviz/litmus_lb_lrsc.png[]
 !===
 |===
@@ -1011,7 +1005,6 @@ b in program order such that m has an address dependency on a
 !===
 |
 !===
-//a! graphviz::images/graphviz/litmus_datarfi.txt[]
 a! image::graphviz/litmus_datarfi.png[]
 !===
 |===
@@ -1047,7 +1040,6 @@ will never perform before (d) has performed.
 !===
 |
 !===
-//a! graphviz::images/graphviz/litmus_datacoirfi.txt[]
 a! image::graphviz/litmus_datacoirfi.png[]
 !===
 |===
@@ -1085,7 +1077,6 @@ of rule <<overlapping-ordering, 11>>.
 !===
 |
 !===
-//a! graphviz::images/graphviz/litmus_addrpo.txt[]
 a! image:graphviz/litmus_addrpo.png[]
 !===
 |===
@@ -1231,18 +1222,6 @@ those external devices and buses.
 [[memory_porting]]
 === Code Porting and Mapping Guidelines
 
-[[tsomappings]]
-.Mappings from TSO operations to RISC-V operations
-[%autowidth,float="center", align="center",cols="<,<",options="header",separator=!]
-|===
-!x86/TSO Operation !RVWMO Mapping
-!Load ! `l{b|h|w|d}; fence r,rw`
-!Store !`fence rw,w; s{b|h|w|d}`
-!Atomic RMW !`amo<op>.{w|d}.aqrl OR` +
-`loop:lr.{w|d}.aq; <op>; sc.{w|d}.aqrl; bnez loop`
-!Fence !`fence rw,rw`
-|===
-
 <<tsomappings>> provides a mapping from TSO memory
 operations onto RISC-V memory instructions. Normal x86 loads and stores
 are all inherently acquire-RCpc and release-RCpc operations: TSO
@@ -1267,44 +1246,11 @@ does not preclude the use of LR for loads. However, again, this mapping
 may also negatively affect performance if it puts more pressure on the
 reservation mechanism than was originally intended.
 
-[[powermappings]]
-.Mappings from Power operations to RISC-V operations
-[%autowidth,float="center",align="center",cols="<,<",options="header",separator=!]
-|===
-!Power Operation !RVWMO Mapping
-!Load !`l{b|h|w|d}`
-!Load-Reserve !`lr.{w|d}`
-!Store !`s{b|h|w|d}`
-!Store-Conditional !`sc.{w|d}`
-!`lwsync` !`fence.tso`
-!`sync` !`fence rw,rw`
-!`isync` !`fence.i; fence r,r`
-|===
-
 <<powermappings>> provides a mapping from Power memory
 operations onto RISC-V memory instructions. Power ISYNC maps on RISC-V
 to a FENCE.I followed by a FENCE R,R; the latter fence is needed because
 ISYNC is used to define a "control+control fence" dependency that is
 not present in RVWMO.
-
-[[armmappings]]
-.Mappings from ARM operations to RISC-V operations
-[%autowidth,float="center",align="center",cols="<,<",options="header",separator=!]
-|===
-!ARM Operation !RVWMO Mapping
-!Load !`l{b|h|w|d}`
-!Load-Acquire !`fence rw, rw; l{b|h|w|d}; fence r,rw`
-!Load-Exclusive !`lr.{w|d}`
-!Load-Acquire-Exclusive !`lr.{w|d}.aqrl`
-!Store !`s{b|h|w|d}`
-!Store-Release !`fence rw,w; s{b|h|w|d}`
-!Store-Exclusive !`sc.{w|d}`
-!Store-Release-Exclusive !`sc.{w|d}.rl`
-!`dmb` !`fence rw,rw`
-!`dmb.ld` !`fence r,rw`
-!`dmb.st` !`fence w,w`
-!`isb` !`fence.i; fence r,r`
-|===
 
 <<armmappings>> provides a mapping from ARM memory
 operations onto RISC-V memory instructions. Since RISC-V does not
@@ -1319,56 +1265,6 @@ likewise map onto their RISC-V LR and SC equivalents, but instead of
 placing a FENCE RW,RW in front of an LR with _aq_ set, we simply also
 set _rl_ instead. ARM ISB maps on RISC-V to FENCE.I followed by
 FENCE R,R similarly to how ISYNC maps for Power.
-
-[[linuxmappings]]
-.Mappings from Linux memory primitives to RISC-V primitives.
-[%autowidth,float="center",align="center",cols="<,<",options="header",separator=!]
-|===
-!Linux Operation !RVWMO Mapping
-
-!`smp_mb()` !`fence rw,rw`
-
-!`smp_rmb()` !`fence r,r`
-
-!`smp_wmb()` !`fence w,w`
-
-!`dma_rmb()` !`fence r,r`
-
-!`dma_wmb()` !`fence w,w`
-
-!`mb()` !`fence iorw,iorw`
-
-!`rmb()` !`fence ri,ri`
-
-!`wmb()` !`fence wo,wo`
-
-!`smp_load_acquire()` !`l{b|h|w|d}; fence r,rw`
-
-!`smp_store_release()` !`fence.tso; s{b|h|w|d}`
-
-!Linux Construct !RVWMO AMO Mapping
-
-!`atomic &#60;op&#62; relaxed` !`amo &#60;op&#62;.{w|d}`
-
-!`atomic &#60;op&#62; acquire` !`amo &#60;op&#62;.{w|d}.aq`
-
-!`atomic &#60;op&#62; release` !`amo &#60;op&#62;.{w|d}.rl`
-
-!`atomic &#60;op&#62;` !`amo &#60;op&#62;.{w|d}.aqrl`
-
-!Linux Construct !RVWMO LR/SC Mapping
-
-!`atomic &#60;op&#62; relaxed` !`loop:lr.{w|d}; &#60;op&#62;; sc.{w|d}; bnez loop`
-
-!`atomic &#60;op&#62; acquire` !`loop:lr.{w|d}.aq; &#60;op&#62;; sc.{w|d}; bnez loop`
-
-!`atomic &#60;op&#62; release` !`loop:lr.{w|d}; &#60;op&#62;; sc.{w|d}.aqrl^&#42;; bnez loop OR`
-
-! !`fence.tso; loop:lr.{w|d}; &#60;op &#62;; sc.{w|d}^&#42;; bnez loop`
-
-!`atomic &#60;op&#62;` !`loop:lr.{w|d}.aq;` `&#60;op&#62;; sc.{w|d}.aqrl; bnez loop`
-
-|===
 
 With regards to <<linuxmappings>>, other
 constructs (such as spinlocks) should follow accordingly. Platforms or
@@ -1455,130 +1351,6 @@ followed by a <<c11mappings_hypothetical>> sequentially consistent load
 can be reordered unless the <<c11mappings>> mapping of stores is
 strengthened by either adding a second fence or mapping the store
 to `amoswap.rl` instead.
-
-[[c11mappings]]
-.Mappings from C/C++ primitives to RISC-V primitives.
-[%autowidth,float="center",align="center",cols="<,<",options="header",separator=!]
-|===
-
-!C/C++ Construct ! RVWMO Mapping
-
-!Non-atomic load ! `l{b|h|w|d}`
-
-!`atomic_load(memory_order_relaxed)` !`l{b|h|w|d}`
-
-!`atomic_load(memory_order_acquire)` !`l{b|h|w|d}; fence r,rw`
-
-!`atomic_load(memory_order_seq_cst)` !`fence rw,rw; l{b|h|w|d}; fence r,rw`
-
-!Non-atomic store !`s{b|h|w|d}`
-
-!`atomic_store(memory_order_relaxed)` !`s{b|h|w|d}`
-
-!`atomic_store(memory_order_release)` !`fence rw,w; s{b|h|w|d}`
-
-!`atomic_store(memory_order_seq_cst)` !`fence rw,w; s{b|h|w|d}`
-
-!`atomic_thread_fence(memory_order_acquire)` !`fence r,rw`
-
-!`atomic_thread_fence(memory_order_release)` !`fence rw,w`
-
-!`atomic_thread_fence(memory_order_acq_rel)` !`fence.tso`
-
-!`atomic_thread_fence(memory_order_seq_cst)` !`fence rw,rw`
-
-!C/C++ Construct !RVWMO AMO Mapping
-
-!`atomic_<op>(memory_order_relaxed)` !`amo<op>.{w|d}`
-
-!`atomic_<op>(memory_order_acquire)` !`amo<op>.{w|d}.aq`
-
-!`atomic_<op>(memory_order_release)` !`amo<op>.{w|d}.rl`
-
-!`atomic_<op>(memory_order_acq_rel)` !`amo<op>.{w|d}.aqrl`
-
-!`atomic_<op>(memory_order_seq_cst)` !`amo<op>.{w|d}.aqrl`
-
-!C/C++ Construct !RVWMO LR/SC Mapping
-
-!`atomic_<op>(memory_order_relaxed)` !`loop:lr.{w|d}; <op>; sc.{w|d};`
-
-! !`bnez loop`
-
-!`atomic_<op>(memory_order_acquire)` !`loop:lr.{w|d}.aq; <op>; sc.{w|d};`
-
-! !`bnez loop`
-
-!`atomic_<op>(memory_order_release)` !`loop:lr.{w|d}; <op>; sc.{w|d}.rl;`
-
-! !`bnez loop`
-
-!`atomic_<op>(memory_order_acq_rel)` !`loop:lr.{w|d}.aq; <op>; sc.{w|d}.rl;`
-
-! !`bnez loop`
-
-!`atomic_<op>(memory_order_seq_cst)` !`loop:lr.{w|d}.aqrl; <op>;`
-
-! !`sc.{w|d}.rl; bnez loop`
-
-|===
-
-[[c11mappings_hypothetical]]
-.Hypothetical mappings from C/C++ primitives to RISC-V primitives, if native load-acquire and store-release opcodes are introduced.
-[%autowidth,float="center",align="center",cols="<,<",options="header",separator=!]
-|===
-!C/C++ Construct !RVWMO Mapping
-
-!Non-atomic load !`l{b|h|w|d}`
-
-!`atomic_load(memory_order_relaxed)` !`l{b|h|w|d}`
-
-!`atomic_load(memory_order_acquire)` !`l{b|h|w|d}.aq`
-
-!`atomic_load(memory_order_seq_cst)` !`l{b|h|w|d}.aq`
-
-!Non-atomic store !`s{b|h|w|d}`
-
-!`atomic_store(memory_order_relaxed)` !`s{b|h|w|d}`
-
-!`atomic_store(memory_order_release)` !`s{b|h|w|d}.rl`
-
-!`atomic_store(memory_order_seq_cst)` !`s{b|h|w|d}.rl`
-
-!`atomic_thread_fence(memory_order_acquire)` !`fence r,rw`
-
-!`atomic_thread_fence(memory_order_release)` !`fence rw,w`
-
-!`atomic_thread_fence(memory_order_acq_rel)` !`fence.tso`
-
-!`atomic_thread_fence(memory_order_seq_cst)` !`fence rw,rw`
-
-!C/C++ Construct !RVWMO AMO Mapping
-
-!`atomic_<op>(memory_order_relaxed)` !`amo<op>.{w|d}`
-
-!`atomic_<op>(memory_order_acquire)` !`amo<op>.{w|d}.aq`
-
-!`atomic_<op>(memory_order_release)` !`amo<op>.{w|d}.rl`
-
-!`atomic_<op>(memory_order_acq_rel)` !`amo<op>.{w|d}.aqrl`
-
-!`atomic_<op>(memory_order_seq_cst)` !`amo<op>.{w|d}.aqrl`
-
-!C/C++ Construct !RVWMO LR/SC Mapping
-
-!`atomic_<op>(memory_order_relaxed)` !`lr.{w|d}; <op>; sc.{w|d}`
-
-!`atomic_<op>(memory_order_acquire)` !`lr.{w|d}.aq; <op>; sc.{w|d}`
-
-!`atomic_<op>(memory_order_release)` !`lr.{w|d}; <op>; sc.{w|d}.rl`
-
-!`atomic_<op>(memory_order_acq_rel)` !`lr.{w|d}.aq; <op>; sc.{w|d}.rl`
-
-!`atomic_<op>(memory_order_seq_cst)` !`lr.{w|d}.aq* <op>; sc.{w|d}.rl`
-
-2+!`*` must be `lr.{w|d}.aqrl` in order to interoperate with code mapped per <<c11mappings>>
-|===
 
 Any AMO can be emulated by an LR/SC pair, but care must be taken to
 ensure that any PPO orderings that originate from the LR are also made
@@ -1738,7 +1510,6 @@ example:
 !===
 |
 !===
-//a! graphviz::images/graphviz/litmus_subsumption.txt[]
 a! image::graphviz/litmus_subsumption.png[]
 !===
 |===

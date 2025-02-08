@@ -76,6 +76,8 @@ Mnemonic::
 czero.eqz _rd_, _rs1_, _rs2_
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -95,6 +97,8 @@ This instruction carries a syntactic dependency from both _rs1_ and _rs2_ to _rd
 Furthermore, if the Zkt extension is implemented, this instruction's timing is independent of the data values in _rs1_ and _rs2_.
 
 SAIL code::
+xxx
+
 [source,sail]
 --
   let condition = X(rs2);
@@ -115,6 +119,8 @@ Mnemonic::
 czero.nez _rd_, _rs1_, _rs2_
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -134,6 +140,8 @@ This instruction carries a syntactic dependency from both _rs1_ and _rs2_ to _rd
 Furthermore, if the Zkt extension is implemented, this instruction's timing is independent of the data values in _rs1_ and _rs2_.
 
 SAIL code::
+xxx
+
 [source,sail]
 --
   let condition = X(rs2);
@@ -145,80 +153,3 @@ SAIL code::
 === Usage examples
 
 The instructions from this extension can be used to construct sequences that perform conditional-arithmetic, conditional-bitwise-logical, and conditional-select operations.
-
-==== Instruction sequences
-
-[%header,cols="4,.^3l,^2"]
-|===
-|Operation
-|Instruction sequence
-|Length
-
-|*Conditional add, if zero* +
-`rd = (rc == 0) ? (rs1 + rs2) : rs1`
-|czero.nez  rd, rs2, rc
-add        rd, rs1, rd
-.8+.^|2 insns
-
-|*Conditional add, if non-zero* +
-`rd = (rc != 0) ? (rs1 + rs2) : rs1`
-|czero.eqz  rd, rs2, rc
-add        rd, rs1, rd
-
-|*Conditional subtract, if zero* +
-`rd = (rc == 0) ? (rs1 - rs2) : rs1`
-|czero.nez  rd, rs2, rc
-sub        rd, rs1, rd
-
-|*Conditional subtract, if non-zero* +
-`rd = (rc != 0) ? (rs1 - rs2) : rs1`
-|czero.eqz  rd, rs2, rc
-sub        rd, rs1, rd
-
-|*Conditional bitwise-or, if zero* +
-`rd = (rc == 0) ? (rs1 \| rs2) : rs1`
-|czero.nez  rd, rs2, rc
-or         rd, rs1, rd
-
-|*Conditional bitwise-or, if non-zero* +
-`rd = (rc != 0) ? (rs1 \| rs2) : rs1`
-|czero.eqz  rd, rs2, rc
-or         rd, rs1, rd
-
-|*Conditional bitwise-xor, if zero* +
-`rd = (rc == 0) ? (rs1 ^ rs2) : rs1`
-|czero.nez  rd, rs2, rc
-xor        rd, rs1, rd
-
-|*Conditional bitwise-xor, if non-zero* +
-`rd = (rc != 0) ? (rs1 ^ rs2) : rs1`
-|czero.eqz  rd, rs2, rc
-xor        rd, rs1, rd
-
-|*Conditional bitwise-and, if zero* +
-`rd = (rc == 0) ? (rs1 & rs2) : rs1`
-|and        rd, rs1, rs2
-czero.eqz  rtmp, rs1, rc
-or         rd, rd, rtmp
-.4+.^|3 insns +
-(requires 1 temporary)
-
-|*Conditional bitwise-and, if non-zero* +
-`rd = (rc != 0) ? (rs1 & rs2) : rs1`
-|and        rd, rs1, rs2
-czero.nez  rtmp, rs1, rc
-or         rd, rd, rtmp
-
-|*Conditional select, if zero* +
-`rd = (rc == 0) ? rs1 : rs2`
-|czero.nez  rd, rs1, rc
-czero.eqz  rtmp, rs2, rc
-or         rd, rd, rtmp
-
-|*Conditional select, if non-zero* +
-`rd = (rc != 0) ? rs1 : rs2`
-|czero.eqz  rd, rs1, rc
-czero.nez  rtmp, rs2, rc
-or         rd, rd, rtmp
-
-|===

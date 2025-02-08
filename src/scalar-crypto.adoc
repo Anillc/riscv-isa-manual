@@ -531,6 +531,8 @@ Mnemonic::
 aes32dsi rd, rs1, rs2, bs
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -552,6 +554,8 @@ This instruction must _always_ be implemented such that its execution
 latency does not depend on the data being operated on.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (AES32DSI (bs,rs2,rs1,rd)) = {
@@ -564,6 +568,8 @@ function clause execute (AES32DSI (bs,rs2,rs1,rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -593,6 +599,8 @@ Mnemonic::
 aes32dsmi rd, rs1, rs2, bs
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -614,6 +622,8 @@ This instruction must _always_ be implemented such that its execution
 latency does not depend on the data being operated on.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (AES32DSMI (bs,rs2,rs1,rd)) = {
@@ -627,6 +637,8 @@ function clause execute (AES32DSMI (bs,rs2,rs1,rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -656,6 +668,8 @@ Mnemonic::
 aes32esi rd, rs1, rs2, bs
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -677,6 +691,8 @@ This instruction must _always_ be implemented such that its execution
 latency does not depend on the data being operated on.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (AES32ESI (bs,rs2,rs1,rd)) = {
@@ -689,6 +705,8 @@ function clause execute (AES32ESI (bs,rs2,rs1,rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -718,6 +736,8 @@ Mnemonic::
 aes32esmi rd, rs1, rs2, bs
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -739,6 +759,8 @@ This instruction must _always_ be implemented such that its execution
 latency does not depend on the data being operated on.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (AES32ESMI (bs,rs2,rs1,rd)) = {
@@ -752,6 +774,8 @@ function clause execute (AES32ESMI (bs,rs2,rs1,rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -781,6 +805,8 @@ Mnemonic::
 aes64ds rd, rs1, rs2
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -815,6 +841,8 @@ Note the reversed register order of the second instruction.
 ====
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (AES64DS(rs2, rs1, rd)) = {
@@ -826,6 +854,8 @@ function clause execute (AES64DS(rs2, rs1, rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -855,6 +885,8 @@ Mnemonic::
 aes64dsm rd, rs1, rs2
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -889,6 +921,8 @@ Note the reversed register order of the second instruction.
 ====
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (AES64DSM(rs2, rs1, rd)) = {
@@ -901,6 +935,8 @@ function clause execute (AES64DSM(rs2, rs1, rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -930,6 +966,8 @@ Mnemonic::
 aes64es rd, rs1, rs2
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -964,6 +1002,8 @@ Note the reversed register order of the second instruction.
 ====
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (AES64ES(rs2, rs1, rd)) = {
@@ -975,6 +1015,8 @@ function clause execute (AES64ES(rs2, rs1, rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -1004,6 +1046,8 @@ Mnemonic::
 aes64esm rd, rs1, rs2
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1038,6 +1082,8 @@ Note the reversed register order of the second instruction.
 ====
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (AES64ESM(rs2, rs1, rd)) = {
@@ -1050,6 +1096,8 @@ function clause execute (AES64ESM(rs2, rs1, rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -1080,6 +1128,8 @@ Mnemonic::
 aes64im rd, rs1
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1104,6 +1154,8 @@ This instruction must _always_ be implemented such that its execution
 latency does not depend on the data being operated on.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (AES64IM(rs1, rd)) = {
@@ -1115,6 +1167,8 @@ function clause execute (AES64IM(rs1, rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -1145,6 +1199,8 @@ Mnemonic::
 aes64ks1i rd, rs1, rnum
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1168,6 +1224,8 @@ Note that `rnum` must be in the range `0x0..0xA`.
 The values `0xB..0xF` are reserved.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (AES64KS1I(rnum, rs1, rd)) = {
@@ -1186,6 +1244,8 @@ function clause execute (AES64KS1I(rnum, rs1, rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -1219,6 +1279,8 @@ Mnemonic::
 aes64ks2 rd, rs1, rs2
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1239,6 +1301,8 @@ This instruction must _always_ be implemented such that its execution
 latency does not depend on the data being operated on.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (AES64KS2(rs2, rs1, rd)) = {
@@ -1250,6 +1314,8 @@ function clause execute (AES64KS2(rs2, rs1, rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -1282,6 +1348,8 @@ Mnemonic::
 andn _rd_, _rs1_, _rs2_
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1298,12 +1366,16 @@ Description::
 This instruction performs the bitwise logical AND operation between _rs1_ and the bitwise inversion of _rs2_.
 
 Operation::
+xxx
+
 [source,sail]
 --
 X(rd) = X(rs1) & ~X(rs2);
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -1331,6 +1403,8 @@ Mnemonic::
 brev8, _rd_, _rs_
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1354,6 +1428,8 @@ this, are being included in specifications.
 ====
 
 Operation::
+xxx
+
 [source,sail]
 --
 result : xlenbits = EXTZ(0b0);
@@ -1364,6 +1440,8 @@ X(rd) = result;
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -1387,6 +1465,8 @@ Mnemonic::
 clmul _rd_, _rs1_, _rs2_
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1403,6 +1483,8 @@ Description::
 clmul produces the lower half of the 2·XLEN carry-less product.
 
 Operation::
+xxx
+
 [source,sail]
 --
 let rs1_val = X(rs1);
@@ -1419,6 +1501,8 @@ X[rd] = output
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -1446,6 +1530,8 @@ Mnemonic::
 clmulh _rd_, _rs1_, _rs2_
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1462,6 +1548,8 @@ Description::
 clmulh produces the upper half of the 2·XLEN carry-less product.
 
 Operation::
+xxx
+
 [source,sail]
 --
 let rs1_val = X(rs1);
@@ -1478,6 +1566,8 @@ X[rd] = output
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -1505,6 +1595,8 @@ Mnemonic::
 orn _rd_, _rs1_, _rs2_
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1521,12 +1613,16 @@ Description::
 This instruction performs the bitwise logical OR operation between _rs1_ and the bitwise inversion of _rs2_.
 
 Operation::
+xxx
+
 [source,sail]
 --
 X(rd) = X(rs1) | ~X(rs2);
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -1554,6 +1650,8 @@ Mnemonic::
 pack _rd_, _rs1_, _rs2_
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1571,6 +1669,8 @@ The pack instruction packs the XLEN/2-bit lower halves of _rs1_ and _rs2_ into
 _rd_, with _rs1_ in the lower half and _rs2_ in the upper half.
 
 Operation::
+xxx
+
 [source,sail]
 --
 let lo_half : bits(xlen/2) = X(rs1)[xlen/2-1..0];
@@ -1579,6 +1679,8 @@ X(rd) = EXTZ(hi_half @ lo_half);
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -1602,6 +1704,8 @@ Mnemonic::
 packh _rd_, _rs1_, _rs2_
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1620,6 +1724,8 @@ _rs1_ and _rs2_ into the 16 least-significant bits of _rd_,
 zero extending the rest of _rd_.
 
 Operation::
+xxx
+
 [source,sail]
 --
 let lo_half : bits(8) = X(rs1)[7..0];
@@ -1628,6 +1734,8 @@ X(rd) = EXTZ(hi_half @ lo_half);
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -1651,6 +1759,8 @@ Mnemonic::
 packw _rd_, _rs1_, _rs2_
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1671,6 +1781,8 @@ sign extending the 32-bit result to the rest of _rd_.
 This instruction only exists on RV64 based systems.
 
 Operation::
+xxx
+
 [source,sail]
 --
 let lo_half : bits(16) = X(rs1)[15..0];
@@ -1679,6 +1791,8 @@ X(rd) = EXTS(hi_half @ lo_half);
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -1702,6 +1816,8 @@ Mnemonic::
 rev8 _rd_, _rs_
 
 Encoding (RV32)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1714,6 +1830,8 @@ Encoding (RV32)::
 ....
 
 Encoding (RV64)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1729,6 +1847,8 @@ Description::
 This instruction reverses the order of the bytes in _rs_.
 
 Operation::
+xxx
+
 [source,sail]
 --
 let input = X(rs);
@@ -1759,6 +1879,8 @@ XLEN-32 and XLEN-16, respectively.
 ===============================================================
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -1786,6 +1908,8 @@ Mnemonic::
 rol _rd_, _rs1_, _rs2_
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1802,6 +1926,8 @@ Description::
 This instruction performs a rotate left of _rs1_ by the amount in least-significant log2(XLEN) bits of _rs2_.
 
 Operation::
+xxx
+
 [source,sail]
 --
 let shamt = if   xlen == 32
@@ -1813,6 +1939,8 @@ X(rd) = result;
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -1840,6 +1968,8 @@ Mnemonic::
 rolw _rd_, _rs1_, _rs2_
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1857,6 +1987,8 @@ This instruction performs a rotate left on the least-significant word of  _rs1_ 
 The resulting word value is sign-extended by copying bit 31 to all of the more-significant bits. 
 
 Operation::
+xxx
+
 [source,sail]
 --
 let rs1 = EXTZ(X(rs1)[31..0])
@@ -1866,6 +1998,8 @@ X(rd) = EXTS(result[31..0]);
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -1893,6 +2027,8 @@ Mnemonic::
 ror _rd_, _rs1_, _rs2_
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1909,6 +2045,8 @@ Description::
 This instruction performs a rotate right of _rs1_ by the amount in least-significant log2(XLEN) bits of _rs2_.
 
 Operation::
+xxx
+
 [source,sail]
 --
 let shamt = if   xlen == 32
@@ -1920,6 +2058,8 @@ X(rd) = result;
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -1947,6 +2087,8 @@ Mnemonic::
 rori _rd_, _rs1_, _shamt_
 
 Encoding (RV32)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1960,6 +2102,8 @@ Encoding (RV32)::
 ....
 
 Encoding (RV64)::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -1977,6 +2121,8 @@ This instruction performs a rotate right of _rs1_ by the amount in the least-sig
 For RV32, the encodings corresponding to shamt[5]=1 are reserved.
 
 Operation::
+xxx
+
 [source,sail]
 --
 let shamt = if   xlen == 32
@@ -1988,6 +2134,8 @@ X(rd) = result;
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -2015,6 +2163,8 @@ Mnemonic::
 roriw _rd_, _rs1_, _shamt_
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2036,6 +2186,8 @@ the more-significant bits.
 
 
 Operation::
+xxx
+
 [source,sail]
 --
 let rs1_data = EXTZ(X(rs1)[31..0];
@@ -2044,6 +2196,8 @@ X(rd) = EXTS(result[31..0]);
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -2071,6 +2225,8 @@ Mnemonic::
 rorw _rd_, _rs1_, _rs2_
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2088,6 +2244,8 @@ This instruction performs a rotate right on the least-significant word of  _rs1_
 The resultant word is sign-extended by copying bit 31 to all of the more-significant bits.
 
 Operation::
+xxx
+
 [source,sail]
 --
 let rs1 = EXTZ(X(rs1)[31..0])
@@ -2097,6 +2255,8 @@ X(rd) = EXTS(result);
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -2125,6 +2285,8 @@ Mnemonic::
 sha256sig0 rd, rs1
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2150,6 +2312,8 @@ This instruction must _always_ be implemented such that its execution
 latency does not depend on the data being operated on.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (SHA256SIG0(rs1,rd)) = {
@@ -2161,6 +2325,8 @@ function clause execute (SHA256SIG0(rs1,rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -2191,6 +2357,8 @@ Mnemonic::
 sha256sig1 rd, rs1
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2216,6 +2384,8 @@ This instruction must _always_ be implemented such that its execution
 latency does not depend on the data being operated on.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (SHA256SIG1(rs1,rd)) = {
@@ -2227,6 +2397,8 @@ function clause execute (SHA256SIG1(rs1,rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -2257,6 +2429,8 @@ Mnemonic::
 sha256sum0 rd, rs1
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2282,6 +2456,8 @@ This instruction must _always_ be implemented such that its execution
 latency does not depend on the data being operated on.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (SHA256SUM0(rs1,rd)) = {
@@ -2293,6 +2469,8 @@ function clause execute (SHA256SUM0(rs1,rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -2323,6 +2501,8 @@ Mnemonic::
 sha256sum1 rd, rs1
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2348,6 +2528,8 @@ This instruction must _always_ be implemented such that its execution
 latency does not depend on the data being operated on.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (SHA256SUM1(rs1,rd)) = {
@@ -2359,6 +2541,8 @@ function clause execute (SHA256SUM1(rs1,rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -2389,6 +2573,8 @@ Mnemonic::
 sha512sig0h rd, rs1, rs2
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2423,6 +2609,8 @@ using the following instruction sequence:
 ====
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (SHA512SIG0H(rs2, rs1, rd)) = {
@@ -2433,6 +2621,8 @@ function clause execute (SHA512SIG0H(rs2, rs1, rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -2463,6 +2653,8 @@ Mnemonic::
 sha512sig0l rd, rs1, rs2
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2497,6 +2689,8 @@ using the following instruction sequence:
 ====
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (SHA512SIG0L(rs2, rs1, rd)) = {
@@ -2507,6 +2701,8 @@ function clause execute (SHA512SIG0L(rs2, rs1, rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -2537,6 +2733,8 @@ Mnemonic::
 sha512sig1h rd, rs1, rs2
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2571,6 +2769,8 @@ using the following instruction sequence:
 ====
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (SHA512SIG1H(rs2, rs1, rd)) = {
@@ -2581,6 +2781,8 @@ function clause execute (SHA512SIG1H(rs2, rs1, rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -2611,6 +2813,8 @@ Mnemonic::
 sha512sig1l rd, rs1, rs2
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2645,6 +2849,8 @@ using the following instruction sequence:
 ====
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (SHA512SIG1L(rs2, rs1, rd)) = {
@@ -2655,6 +2861,8 @@ function clause execute (SHA512SIG1L(rs2, rs1, rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -2685,6 +2893,8 @@ Mnemonic::
 sha512sum0r rd, rs1, rs2
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2719,6 +2929,8 @@ Note the reversed source register ordering.
 ====
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (SHA512SUM0R(rs2, rs1, rd)) = {
@@ -2729,6 +2941,8 @@ function clause execute (SHA512SUM0R(rs2, rs1, rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -2759,6 +2973,8 @@ Mnemonic::
 sha512sum1r rd, rs1, rs2
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2793,6 +3009,8 @@ Note the reversed source register ordering.
 ====
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (SHA512SUM1R(rs2, rs1, rd)) = {
@@ -2803,6 +3021,8 @@ function clause execute (SHA512SUM1R(rs2, rs1, rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -2833,6 +3053,8 @@ Mnemonic::
 sha512sig0 rd, rs1
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2854,6 +3076,8 @@ This instruction must _always_ be implemented such that its execution
 latency does not depend on the data being operated on.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (SHA512SIG0(rs1, rd)) = {
@@ -2863,6 +3087,8 @@ function clause execute (SHA512SIG0(rs1, rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -2893,6 +3119,8 @@ Mnemonic::
 sha512sig1 rd, rs1
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2914,6 +3142,8 @@ This instruction must _always_ be implemented such that its execution
 latency does not depend on the data being operated on.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (SHA512SIG1(rs1, rd)) = {
@@ -2923,6 +3153,8 @@ function clause execute (SHA512SIG1(rs1, rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -2953,6 +3185,8 @@ Mnemonic::
 sha512sum0 rd, rs1
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -2974,6 +3208,8 @@ This instruction must _always_ be implemented such that its execution
 latency does not depend on the data being operated on.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (SHA512SUM0(rs1, rd)) = {
@@ -2983,6 +3219,8 @@ function clause execute (SHA512SUM0(rs1, rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -3013,6 +3251,8 @@ Mnemonic::
 sha512sum1 rd, rs1
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -3034,6 +3274,8 @@ This instruction must _always_ be implemented such that its execution
 latency does not depend on the data being operated on.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (SHA512SUM1(rs1, rd)) = {
@@ -3043,6 +3285,8 @@ function clause execute (SHA512SUM1(rs1, rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -3073,6 +3317,8 @@ Mnemonic::
 sm3p0 rd, rs1
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -3099,6 +3345,8 @@ This instruction is based on work done in cite:[MJS:LWSHA:20].
 ====
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (SM3P0(rs1, rd)) = {
@@ -3110,6 +3358,8 @@ function clause execute (SM3P0(rs1, rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -3137,6 +3387,8 @@ Mnemonic::
 sm3p1 rd, rs1
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -3163,6 +3415,8 @@ This instruction is based on work done in cite:[MJS:LWSHA:20].
 ====
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (SM3P1(rs1, rd)) = {
@@ -3174,6 +3428,8 @@ function clause execute (SM3P1(rs1, rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -3201,6 +3457,8 @@ Mnemonic::
 sm4ed rd, rs1, rs2, bs
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -3226,6 +3484,8 @@ This instruction must _always_ be implemented such that its execution
 latency does not depend on the data being operated on.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (SM4ED (bs,rs2,rs1,rd)) = {
@@ -3243,6 +3503,8 @@ function clause execute (SM4ED (bs,rs2,rs1,rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -3270,6 +3532,8 @@ Mnemonic::
 sm4ks rd, rs1, rs2, bs
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -3295,6 +3559,8 @@ This instruction must _always_ be implemented such that its execution
 latency does not depend on the data being operated on.
 
 Operation::
+xxx
+
 [source,sail]
 --
 function clause execute (SM4KS (bs,rs2,rs1,rd)) = {
@@ -3311,6 +3577,8 @@ function clause execute (SM4KS (bs,rs2,rs1,rd)) = {
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -3337,6 +3605,8 @@ Mnemonic::
 unzip _rd_, _rs_
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -3357,6 +3627,8 @@ It is the inverse of the <<insns-zip,zip>> instruction.
 This instruction is available only on RV32.
 
 Operation::
+xxx
+
 [source,sail]
 --
 foreach (i from 0 to xlen/2-1) {
@@ -3375,6 +3647,8 @@ directly.
 ===============================================================
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -3398,6 +3672,8 @@ Mnemonic::
 xnor _rd_, _rs1_, _rs2_
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -3414,12 +3690,16 @@ Description::
 This instruction performs the bit-wise exclusive-NOR operation on _rs1_ and _rs2_.
 
 Operation::
+xxx
+
 [source,sail]
 --
 X(rd) = ~(X(rs1) ^ X(rs2));
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -3446,6 +3726,8 @@ Mnemonic::
 xprem8 _rd_, _rs1_, _rs2_
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -3465,6 +3747,8 @@ rs2 register contains a vector of XLEN/8 8-bit indexes. The result is each eleme
 indexed element in rs1, or zero if the index into rs2 is out of bounds.
 
 Operation::
+xxx
+
 [source,sail]
 --
 val xperm8_lookup : (bits(8), xlenbits) -> bits(8)
@@ -3482,6 +3766,8 @@ RETIRE_SUCCESS
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -3505,6 +3791,8 @@ Mnemonic::
 xperm4 _rd_, _rs1_, _rs2_
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -3524,6 +3812,8 @@ The rs2 register contains a vector of XLEN/4 4-bit indexes. The result is each e
 indexed element in rs1, or zero if the index into rs2 is out of bounds.
 
 Operation::
+xxx
+
 [source,sail]
 --
 val xperm4_lookup : (bits(4), xlenbits) -> bits(4)
@@ -3541,6 +3831,8 @@ RETIRE_SUCCESS
 --
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -3565,6 +3857,8 @@ Mnemonic::
 zip _rd_, _rs_
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
@@ -3585,6 +3879,8 @@ It is the inverse of the <<insns-unzip,unzip>> instruction.
 This instruction is available only on RV32.
 
 Operation::
+xxx
+
 [source,sail]
 --
 foreach (i from 0 to xlen/2-1) {
@@ -3603,6 +3899,8 @@ directly.
 ===============================================================
 
 Included in::
+xxx
+
 [%header,cols="4,2,2"]
 |===
 |Extension
@@ -3665,6 +3963,8 @@ and entropy values. It is available on both RV32 and RV64 base architectures
 and will zero-extend the 32-bit word to XLEN bits.
 
 Encoding::
+xxx
+
 [wavedrom, , svg]
 ....
 {reg:[
