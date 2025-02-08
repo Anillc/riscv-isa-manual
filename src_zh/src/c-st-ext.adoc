@@ -1,0 +1,620 @@
+[[compressed]]
+== "C" 扩展用于压缩指令，版本 2.0
+
+本章描述了 RISC-V 标准压缩指令集扩展，名为 "C"，通过为常见操作添加短的 16 位指令编码，减少了静态和动态代码量。 C扩展可以添加到任何基础ISA（RV32、RV64、RV128），我们使用通用术语“RVC”来涵盖其中任意一个。 通常，一个程序中 50%-60% 的 RISC-V 指令可以替换为 RVC 指令，从而实现 25%-30% 的代码量缩减。
+
+=== 概述
+
+RVC 使用一种简单的压缩方案，当出现以下情况时，提供常见 32 位 RISC-V 指令的较短 16 位版本：
+
+* 立即数或地址偏移量较小时，或
+* 其中一个寄存器是零寄存器（`x0`）、ABI链接寄存器（`x1`）或ABI堆栈指针（`x2`），或
+* 目标寄存器和第一个源寄存器相同时，或
+* 使用的寄存器是最常用的 8 个寄存器。
+
+C 扩展与所有其他标准指令扩展兼容。 C 扩展允许 16 位指令随意与 32 位指令混合使用，后者现在可以从任何 16 位边界开始，即 IALIGN=16。 随着 C 扩展的加入，没有指令会引发指令地址不对齐异常。
+
+[NOTE]
+====
+去除原始 32 位指令的 32 位对齐限制允许显著提高代码密度。
+====
+
+压缩指令编码在RV32C、RV64C和RV128C中大多是通用的，但如<<rvc-instr-table0, 表34>>所示，某些操作码根据基础ISA用于不同目的。 例如，更宽地址空间的RV64C和RV128C变体需要附加的操作码来压缩64位整数的加载和存储，而RV32C使用相同的操作码来压缩单精度浮点值的加载和存储。 类似地，RV128C需要额外的操作码来捕获128位整数值的加载和存储，而在RV32C和RV64C中，这些相同的操作码用于加载和存储双精度浮点值。 如果实现 C 扩展，则必须提供适当的压缩浮点加载和存储指令，前提是同时实现了相关的标准浮点扩展（F 和/或 D）。 此外，RV32C包括了一条压缩跳转链接指令，用于压缩短程子程序调用，其中相同的操作码用于压缩RV64C和RV128C的ADDIW。
+
+[TIP]
+====
+双精度加载和存储在静态和动态指令中占有重要比例，因此有理由将它们纳入RV32C和RV64C编码。
+
+虽然对于当前支持的 ABI 编译的基准测试，单精度加载和存储并不是静态或动态压缩的重要来源，但对于仅提供硬件单精度浮点单元且其 ABI 仅支持单精度浮点数的微控制器，单精度加载和存储至少会像双精度加载和存储在测量基准中一样频繁地使用。 因此，提供对这些功能的压缩支持是RV32C的动机。
+
+短程子程序调用在微控制器的小型二进制文件中更为常见，因此将这些功能纳入RV32C是有动机的。
+
+虽然在不同基础 ISA 上为不同目的重用操作码增加了文档复杂性，但即使支持多个基础 ISA 的设计，其对实现复杂度的影响也很小。
+压缩浮点加载和存储变体使用与较宽整数加载和存储相同的指令格式和寄存器说明。
+====
+
+RVC被设计成在每个RVC指令展开为基础ISA（RV32I/E、RV64I/E或RV128I）或存在时F和D标准扩展中的单个32位指令的约束下运行。 采用这种约束有两个主要好处：
+
+* 硬件设计可以在解码期间简单地展开 RVC 指令，简化验证并最小化对现有微架构的修改。
+* 编译器可以不意识到 RVC 扩展，让代码压缩交给汇编器和链接器处理，虽然一个理解压缩的编译器通常会产生更好的结果。
+
+[NOTE]
+====
+我们认为，在 C 和基础 IFD 指令之间简单的一对一映射带来的多重复杂性减少远远超过了通过增加仅在 C 扩展中支持的附加指令或允许在一个 C 指令中编码多个 IFD 指令所带来的潜在收益。
+====
+
+需要注意的是，C 扩展并不是一个独立的 ISA，而是旨在与基础 ISA 一起使用。
+
+[TIP]
+====
+可变长度指令集长期以来用于提高代码密度。 例如，IBM Stretch cite:[stretch]，开发于1950年代末，具有一个包含32位和64位指令的ISA，其中一些32位指令是完整64位指令的压缩版本。
+Stretch 还采用了限制一些较短指令格式中可寻址寄存器集的概念，其中短分支指令只能引用其中一个索引寄存器。
+后来的IBM 360架构cite:[ibm360]支持一种简单的可变长度指令编码，具有16位、32位或48位指令格式。
+
+1963年，CDC推出了由Cray设计的CDC 6600 cite:[cdc6600]，这是RISC架构的前身，它引入了一种寄存器丰富的加载存储架构，具有两种长度的指令：15位和30位。 后来 Cray-1 设计使用了非常类似的指令格式，具有 16 位和 32 位指令长度。
+
+1980年代的最初RISC ISA都选择了性能而非代码大小，这在工作站环境中是合理的，但对于嵌入式系统则不然。 因此，ARM 和 MIPS 后来都制作了提供更小代码大小的 ISA 版本，提供替代的 16 位指令集而不是标准 32 位指令。 压缩的RISC ISA相对于其起始点减小了大约25%-30%的代码大小，生成的代码明显小于80x86。 这一结果让一些人感到惊讶，因为他们直觉上认为可变长度 CISC ISA 应该比只提供 16 位和 32 位格式的 RISC ISA 更小。
+
+由于原始 RISC ISA 没有留下足够的操作码空间来包含这些未计划的压缩指令，它们被开发为完整的新 ISA。 这意味着编译器需要为独立的压缩 ISA 提供不同的代码生成器。 第一个压缩RISC ISA扩展（例如，ARM Thumb和MIPS16）仅使用固定的16位指令大小，这在静态代码大小上提供了良好的减少，但导致动态指令数增加，导致与原有固定宽度32位指令相比性能下降。 这导致了第二代压缩RISC ISA设计的开发，具有混合的16位和32位指令长度（例如，ARM Thumb2、microMIPS、PowerPC VLE），以便性能与纯32位指令相似但具有显著的代码大小节省。
+不幸的是，这些不同的压缩 ISA 世代彼此不兼容，也与原始未压缩 ISA 不兼容，导致文档、实施和软件工具支持的巨大复杂性。
+
+在常用的 64 位 ISA 中，只有 PowerPC 和 microMIPS 目前支持压缩指令格式。 令人惊讶的是，最受欢迎的移动平台64位ISA（ARM v8）没有包含压缩指令格式，因为静态代码大小和动态指令获取带宽是重要的指标。 虽然在更大的系统中静态代码大小不是主要关注点，但指令获取带宽可能是运行商业负载的服务器中的一个主要瓶颈，因为这些负载通常有大的指令工作集。
+
+受益于 25 年的后见之明，RISC-V 设计支持从一开始就包含压缩指令，为 RVC 留下足够的操作码空间，使其能作为基础 ISA 上的简单扩展来添加（与许多其他扩展一起）。 RVC 的理念是减少嵌入式应用的代码大小 _并_ 通过减少指令缓存中的未命中次数来提高所有应用的性能和能效。
+Waterman 表明，RVC 获取的指令位减少了 25%-30%，这使得指令缓存未命中减少了 20%-25%，或大致相当于将指令缓存大小翻倍的性能影响。 cite:[waterman-ms]
+====
+
+=== 压缩指令格式
+
+((((compressed, formats))))
+
+<<rvc-form>> 显示了九种压缩指令格式。 CR、CI 和 CSS 可以使用所有 32 个 RVI 寄存器，但 CIW、CL、CS、CA 和 CB 仅限于其中 8 个。
+<<registers>>列出了这些受欢迎的寄存器，它们对应于寄存器`x8`到`x15`。 注意有一个单独的加载和存储指令版本使用堆栈指针作为基址寄存器，因为保存到堆栈和从堆栈恢复是如此普遍，并且它们使用 CI 和 CSS 格式以允许访问所有 32 个数据寄存器。 CIW为ADDI4SPN指令提供了一个8位立即数。
+
+[NOTE]
+====
+RISC-V ABI被更改为使常用寄存器映射到寄存器'x8-x15'。 这通过将一组自然对齐的连续寄存器数提供给解压缩解码器来简化了解压缩解码，并且也与仅有16个整数寄存器的RV32E和RV64E基础ISA兼容。
+====
+
+基于压缩寄存器的浮点加载和存储分别使用CL和CS格式，八个寄存器映射到`f8`到`f15`。
+((((calling convention, standard))))
+
+[NOTE]
+====
+_标准RISC-V调用约定将最常用的浮点寄存器映射到寄存器`f8`到`f15`，这允许与整数寄存器号相同的寄存器解压缩解码。_
+====
+
+((((register source spcifiers, c-ext))))
+格式旨在保持两个寄存器源说明符的位在所有指令中保持在相同位置，而目标寄存器字段可以移动。 当存在完整的 5 位目标寄存器说明符时，它位于与 32 位 RISC-V 编码相同的位置。 对于符号扩展的立即数，符号扩展总是来自第 12 位。 立即数字段已被打乱，如基础规范中所述，以减少所需的立即数多路复用器的数量。
+
+[NOTE]
+====
+立即数字段在指令格式中是打乱的，而不是按顺序，以便每个指令中的尽可能多的位在相同位置，从而简化实现。
+====
+
+对于许多RVC指令，零值立即数被禁止，`x0`不是有效的5位寄存器说明符。 这些限制释放出编码空间，供其他需要较少操作数位的指令使用。
+
+//[[cr-register]]
+
+//include::images/wavedrom/cr-register.adoc[]
+
+//.Compressed 16-bit RVC instructions
+
+//(((compressed, 16-bit)))
+
+//[%header]
+
+[float="center", align="center", cols="1a, 2a", frame="none", grid="none"]
+|===
+|
+[%autowidth, float="right", align="right", cols="^,^", frame="none", grid="none", options="noheader"]
+!===
+!格式 !含义
+
+!CR !寄存器
+
+!CI !立即数
+
+!CSS !栈相对存储
+
+!CIW !宽立即数
+
+!CL !加载
+
+!CS !存储
+
+!CA !算术
+
+!CB !分支/算术
+
+!CJ !跳转
+!===
+|
+[float="left", align="left", cols="1,1,1,1,1,1,1", options="noheader"]
+!===
+2+^!15 14 13 12 2+^!11 10 9 8 7 2+^!6 5 4 3 2 ^!1 0
+
+2+^!funct4 2+^!rd/rs1 2+^!rs2 ^!op
+
+^!funct3 ^!imm 2+^!rd/rs1 2+^!imm ^!op
+
+^!funct3 3+^!imm 2+^!rs2 ^!op
+
+^!funct3 4+^!imm ^!rd&#x2032; ^!op
+
+^!funct3 2+^!imm ^!rs1&#x2032; ^!imm ^!rd&#x2032; ^!op
+
+^!funct3 2+^!imm ^!rs1&#x2032; ^!imm ^!rs2&#x2032; ^!op
+
+3+^!funct6 ^!rd&#x2032;/rs1&#x2032; ^!funct2 ^!rs2&#x2032; ^!op
+
+^!funct3 2+^!offset ^!rd&#x2032;/rs1&#x2032; 2+^!offset ^!op
+
+^!funct3 5+^!jump target ^!op
+!===
+|===
+
+//[cols="20%,10%,10%,10%,10%,10%,10%,10%,10%"]
+
+[float="center", align="center", cols="1a, 1a", frame="none", grid="none"]
+|===
+|
+[%autowidth, cols="<", frame="none", grid="none", options="noheader"]
+!===
+!RVC 寄存器编号
+
+!整数寄存器编号
+
+!整数寄存器 ABI 名称
+
+!浮点寄存器编号
+
+!浮点寄存器 ABI 名称
+!===
+|
+[%autowidth, cols="^,^,^,^,^,^,^,^", options="noheader"]
+!===
+!`000` !`001` !`010` !`011` !`100` !`101` !`110` !`111`
+
+!`x8` !`x9` !`x10` !`x11` !`x12` !`x13` !`x14` !`x15`
+
+!`s0` !`s1` !`a0` !`a1` !`a2` !`a3` !`a4` !`a5`
+
+!`f8` !`f9` !`f10` !`f11` !`f12` !`f13` !`f14` !`f15`
+
+!`fs0` !`fs1` !`fa0` !`fa1` !`fa2` !`fa3` !`fa4` !`fa5`
+!===
+|===
+
+=== 加载和存储指令
+
+为增加 16 位指令的范围，数据传输指令使用按数据字节数缩放的零扩展立即数：字乘以 4，
+双字乘以 8，四字乘以 16。
+
+RVC 提供两种加载和存储的变体。 一种使用ABI堆栈指针`x2`作为基地址并可以定位任何数据寄存器。 另一种可以引用 8 个基地址寄存器之一和 8 个数据寄存器之一。
+
+==== 基于堆栈指针的加载和存储
+
+include::images/wavedrom/c-sp-load-store.adoc[]
+
+//.Stack-Pointer-Based Loads and Stores--these instructions use the CI format.
+
+这些指令使用 CI 格式。
+
+C.LWSP 从内存加载一个 32 位值到寄存器 _rd_。 它通过将按4缩放的_零_扩展偏移量加到堆栈指针`x2`上计算有效地址。 它展开为`lw rd, offset(x2)`。 只有当_rd_&#x2260;x0时C.LWSP才有效，为_rd_=x0的代码点保留。
+
+C.LDSP是RV64C/RV128C专用指令，从内存加载一个64位值到寄存器_rd_。 它通过将按8缩放的零扩展偏移量加到堆栈指针`x2`上计算有效地址。 它展开为`ld rd, offset(x2)`。 只有当_rd_&#x2260;x0时C.LDSP才有效，为_rd_=x0的代码点保留。
+
+C.LQSP是RV128C专用指令，从内存加载一个128位值到寄存器_rd_。 它通过将按16缩放的零扩展偏移量加到堆栈指针`x2`上计算有效地址。 它展开为`lq rd, offset(x2)`。 只有当_rd_&#x2260;x0时C.LQSP才有效，为_rd_=x0的代码点保留。
+
+C.FLWSP是RV32FC专用指令，从内存加载一个单精度浮点值到浮点寄存器_rd_。 它通过将按4缩放的_零_扩展偏移量加到堆栈指针`x2`上计算有效地址。 它展开为`flw rd, offset(x2)`。
+
+C.FLDSP是RV32DC/RV64DC专用指令，从内存加载一个双精度浮点值到浮点寄存器_rd_。 它通过将按8缩放的_零_扩展偏移量加到堆栈指针`x2`上计算有效地址。 它展开为`fld rd, offset(x2)`。
+
+include::images/wavedrom/c-sp-load-store-css.adoc[]
+
+//.Stack-Pointer-Based Loads and Stores--these instructions use the CSS format.
+
+这些指令使用 CSS 格式。
+
+C.SWSP将寄存器_rs2_中的32位值存储到内存。 它通过将按4缩放的_零_扩展偏移量加到堆栈指针`x2`上计算有效地址。 它展开为`sw rs2, offset(x2)`。
+
+C.SDSP是RV64C/RV128C专用指令，将寄存器_rs2_中的64位值存储到内存。 它通过将按8缩放的_零_扩展偏移量加到堆栈指针`x2`上计算有效地址。 它展开为`sd rs2, offset(x2)`。
+
+C.SQSP是RV128C专用指令，将寄存器_rs2_中的128位值存储到内存。 它通过将按16缩放的_零_扩展偏移量加到堆栈指针`x2`上计算有效地址。 它展开为`sq rs2, offset(x2)`。
+
+C.FSWSP是RV32FC专用指令，将浮点寄存器_rs2_中的单精度浮点值存储到内存。 它通过将按4缩放的_零_扩展偏移量加到堆栈指针`x2`上计算有效地址。 它展开为`fsw rs2, offset(x2)`。
+
+C.FSDSP是RV32DC/RV64DC专用指令，将浮点寄存器_rs2_中的双精度浮点值存储到内存。 它通过将按8缩放的_零_扩展偏移量加到堆栈指针`x2`上计算有效地址。 它展开为`fsd rs2, offset(x2)`。
+
+[NOTE]
+====
+函数入口/退出处的寄存器保存/恢复代码占据了相当一部分静态代码大小。 RVC中基于堆栈指针的压缩加载和存储有效地将保存/恢复静态代码大小减少了2倍，同时通过减少动态指令带宽来提高性能。
+
+其他 ISA 中常用的一种机制是使用多重加载和多重存储指令进一步减少保存/恢复代码大小。 我们考虑为 RISC-V 采用这些指令，但注意到了以下缺点：
+
+* 这些指令复杂化了处理器实现。
+* 对于虚拟内存系统，某些数据访问可能驻留在物理内存中，而某些则可能不在，这需要新的重启机制来处理部分执行的指令。
+* 与其他RVC指令不同，没有等效的IFD用于加载多个和存储多个。
+* 与其他RVC指令不同，编译器需要知道这些指令以生成指令并以一定顺序分配寄存器，以最大化被保存和存储的机会，因为它们将按顺序保存和恢复。
+* 简单的微体系结构实现会限制其他指令在加载和存储多个指令周围的调度方式，从而导致可能的性能损失。
+* 顺序寄存器分配的需求可能与为CIW，CL，CS，CA和CB格式选择的特色寄存器相冲突。
+
+此外，通过将序言和结束代码替换为调用公共序言和结束代码的子程序，可以在软件中实现许多增益，这种技术在cite:[waterman-phd]的第5.6节中描述。
+
+尽管合理的架构师可能会得出不同的结论，但我们决定省略加载和存储多个，而是使用软件专用的方法调用保存/恢复微代码例程，以获得最大的代码体积缩减。
+====
+
+==== 基于寄存器的加载和存储
+
+include::images/wavedrom/reg-based-ldnstr.adoc[]
+
+//.Compressed, register-based load and stores--these instructions use the CL format.
+
+(((压缩，基于寄存器的加载和存储)))
+这些指令使用CL格式。
+
+C.LW从内存中加载32位值到寄存器`_rd′_`。 它通过将零扩展偏移乘以4加到寄存器`_rs1′_`中的基地址来计算有效地址。 它扩展为`lw rd′, offset(rs1′)`。
+
+C.LD是一个仅限RV64C/RV128C的指令，它从内存中加载64位值到寄存器`_rd′_`。 它通过将零扩展偏移乘以8加到寄存器`_rs1′_`中的基地址来计算有效地址。 它扩展为`ld rd′, offset(rs1′)`。
+
+C.LQ是一个仅限RV128C的指令，它从内存中加载128位值到寄存器`_rd′_`。 它通过将零扩展偏移乘以16加到寄存器`_rs1′_`中的基地址来计算有效地址。 它扩展为`lq rd′, offset(rs1′)`。
+
+C.FLW是一个仅限RV32FC的指令，从内存中加载单精度浮点值到浮点寄存器`_rd′_`。 它通过将零扩展偏移乘以4加到寄存器`_rs1′_`中的基地址来计算有效地址。 它扩展为`flw rd′, offset(rs1′)`。
+
+C.FLD是一个仅限RV32DC/RV64DC的指令，从内存中加载双精度浮点值到浮点寄存器`_rd′_`。 它通过将零扩展偏移乘以8加到寄存器`_rs1′_`中的基地址来计算有效地址。 它扩展为`fld rd′, offset(rs1′)`。
+
+include::images/wavedrom/c-cs-format-ls.adoc[]
+
+//.Compressed, CS format load and store--these instructions use the CS format.
+
+(((压缩，cs格式加载和存储)))
+
+这些指令使用CS格式。
+
+C.SW将寄存器`_rs2′_`中的32位值存储到内存中。
+它通过将零扩展偏移乘以4加到寄存器`_rs1′_`中的基地址来计算有效地址。 它扩展为`sw rs2′, offset(rs1′)`。
+
+C.SD是一个仅限RV64C/RV128C的指令，它将寄存器`_rs2′_`中的64位值存储到内存中。 它通过将零扩展偏移乘以8加到寄存器`_rs1′_`中的基地址来计算有效地址。 它扩展为`sd rs2′, offset(rs1′)`。
+
+C.SQ是一个仅限RV128C的指令，它将寄存器`_rs2′_`中的128位值存储到内存中。 它通过将零扩展偏移乘以16加到寄存器`_rs1′_`中的基地址来计算有效地址。 它扩展为`sq rs2′, offset(rs1′)`。
+
+C.FSW是一个仅限RV32FC的指令，将单精度浮点值从浮点寄存器`_rs2′_`存储到内存中。 它通过将零扩展偏移乘以4加到寄存器`_rs1′_`中的基地址来计算有效地址。 它扩展为`fsw rs2′, offset(rs1′)`。
+
+C.FSD是一个仅限RV32DC/RV64DC的指令，将双精度浮点值从浮点寄存器`_rs2′_`存储到内存中。 它通过将零扩展偏移乘以8加到寄存器`_rs1′_`中的基地址来计算有效地址。 它扩展为`fsd rs2′, offset(rs1′)`。
+
+=== 控制转移指令
+
+RVC提供无条件跳转指令和条件分支指令。 与基本RVI指令一样，所有RVC控制传输指令的偏移量均为2字节的倍数。
+
+include::images/wavedrom/c-cj-format-ls.adoc[]
+
+//.Compressed, CJ format load and store--these instructions use the CJ format.
+
+(((压缩，cj格式加载和存储)))
+
+这些指令使用CJ格式。
+
+C.J执行无条件控制转移。 偏移量经过符号扩展并加到`pc`形成跳转目标地址。 因此，C.J可以定位±2 KiB范围。 C.J扩展为`jal x0, offset`。
+
+C.JAL是一个仅限RV32C的指令，执行与C.J相同的操作，但还将跳转后的指令地址（`pc+2`）写入链接寄存器，`x1`。 C.JAL扩展为`jal x1, offset`。
+
+include::images/wavedrom/c-cr-format-ls.adoc[]
+
+//.Compressed, CR format load and store--these instructions use the CR format.
+
+(((压缩，cr格式加载和存储)))
+
+这些指令使用CR格式。
+
+C.JR（跳转寄存器）执行无条件控制转移到寄存器_rs1_中的地址。 C.JR扩展为`jalr x0, 0(rs1)`。 C.JR仅在latexmath:[$\textit{rs1}{\neq}\texttt{x0}$]时有效；代码点latexmath:[$\textit{rs1}{=}\texttt{x0}$]被保留。
+
+C.JALR（跳转和链接寄存器）执行与C.JR相同的操作，但此外将跳转后的指令地址（`pc`+2）写入链接寄存器，`x1`。 C.JALR扩展为`jalr x1, 0(rs1)`。 C.JALR仅在latexmath:[$\textit{rs1}{\neq}\texttt{x0}$]时有效；代码点latexmath:[$\textit{rs1}{=}\texttt{x0}$]对应于C.EBREAK指令。
+
+[TIP]
+====
+严格来说，C.JALR不会完全扩展为基RVI指令，因为用于形成链接地址的PC加的值是2而不是基ISA中的4，但支持2和4字节的偏移量只是对基微体系结构的很小变更。
+====
+
+include::images/wavedrom/c-cb-format-ls.adoc[]
+
+//.Compressed, CB format load and store--these instructions use the CB format.
+
+(((压缩，cb格式加载和存储)))
+
+这些指令使用CB格式。
+
+C.BEQZ执行条件控制转移。 偏移量经过符号扩展并加到`pc`形成分支目标地址。
+因此它可以定位±256 B范围。 C.BEQZ如果寄存器_rs1′_中的值为零则执行分支。 它扩展为`beq rs1′, x0, offset`。
+
+C.BNEZ定义为类似的，但如果_rs1′_包含非零值，则执行分支。 它扩展为`bne rs1′, x0, offset`。
+
+=== 整数计算指令
+
+RVC提供了几个整数算术和常量生成的指令。
+
+==== 整数常量生成指令
+
+这两个常量生成指令都使用CI指令格式，并且可以面向任何整数寄存器。
+
+include::images/wavedrom/c-integer-const-gen.adoc[]
+
+//.Integer constant generation format.
+
+(((压缩，整数常量生成)))
+
+C.LI将符号扩展的6位立即数_imm_加载到寄存器_rd_中。
+C.LI扩展为`addi rd, x0, imm`。 C.LI仅在`_rd_≠x0`时有效；代码点`_rd_=x0`编码为HINTs。
+
+C.LUI将非零6位立即数字段加载到目标寄存器的位17–12中，清除底部12位，并将位17符号扩展到目标寄存器的所有更高位。 C.LUI扩展为`lui rd, imm`。 C.LUI仅在latexmath:[$\textit{rd}{\neq}{\left\{\texttt{x0},\texttt{x2}\right\}}$]时有效，并且立即数不为零。 代码点_imm_=0是保留的；剩余的代码点_rd_=`x0`是HINTs；剩余的代码点_rd_=`x2`对应于C.ADDI16SP指令。
+
+==== 整数寄存器-立即数操作
+
+这些整数寄存器-立即数操作在CI格式中编码，并对整数寄存器和6位立即数执行操作。
+
+include::images/wavedrom/c-int-reg-immed.adoc[]
+
+//.Integer register-immediate format.
+
+(((压缩，整数寄存器-立即数)))
+
+C.ADDI将非零符号扩展的6位立即数添加到寄存器_rd_中的值，然后将结果写入_rd_。 C.ADDI扩展为`addi rd, rd, imm`。 C.ADDI仅在`_rd_≠x0`和`_imm_≠0`时有效。 代码点`_rd_=x0`编码为C.NOP指令；剩余代码点_imm_=0编码为HINTs。
+
+C.ADDIW是一个仅限RV64C/RV128C的指令，执行相同的计算但生成32位结果，然后将结果符号扩展到64位。 C.ADDIW扩展为`addiw rd, rd, imm`。 对于C.ADDIW，立即数可以为零，这对应于`sext.w rd`。 C.ADDIW仅在`_rd_≠x0`时有效；代码点`_rd_=x0`是保留的。
+
+C.ADDI16SP与C.LUI共享操作码，但目标字段为`x2`。 C.ADDI16SP将非零符号扩展的6位立即数添加到栈指针（`sp=x2`）的值中，其中立即数缩放为表征范围（-512,496）的16倍。 C.ADDI16SP用于在过程序言和终止中调整栈指针。 它扩展为`addi x2, x2, nzimm[9:4]`。 C.ADDI16SP仅在_nzimm_≠0时有效；代码点_nzimm_=0是保留的。
+
+[NOTE]
+====
+在标准RISC-V调用约定中，栈指针`sp`始终为16字节对齐。
+====
+
+include::images/wavedrom/c-ciw.adoc[]
+
+//.CIW format.
+
+(((压缩，CIW)))
+C.ADDI4SPN是一种CIW格式指令，它将零扩展的非零立即数（乘以4）添加到栈指针，`x2`，并将结果写入`rd′`。 该指令用于生成指向栈分配变量的指针，扩展为`addi rd′, x2, nzuimm[9:2]`。 C.ADDI4SPN仅在_nzuimm_≠0时有效；代码点_nzuimm_=0是保留的。
+
+include::images/wavedrom/c-ci.adoc[]
+
+//.CI format.
+
+(((压缩，CI)))
+
+C.SLLI是一种CI格式指令，它对寄存器_rd_中的值进行逻辑左移，然后将结果写入_rd_。 移位量在_shamt_字段中编码。 对于RV128C，移位量为零用于编码移位64。 C.SLLI扩展为`slli rd, rd, shamt[5:0]`，除了RV128C中`shamt=0`，扩展为`slli rd, rd, 64`。
+
+对于RV32C，_shamt[5]_必须为零；代码点_shamt[5]_=1指定用于自定义扩展。 对于RV32C和RV64C，移位量必须非零；代码点_shamt_=0是HINTs。 对于所有基本ISA，代码点`_rd_=x0`是HINTs，除了在RV32C中_shamt[5]_=1的。
+
+include::images/wavedrom/c-srli-srai.adoc[]
+
+//.C-SRLI-SRAI format.
+
+(((压缩，C.SRLI, C.SRAI)))
+
+C.SRLI是CB格式指令，对寄存器_rd′_中的值进行逻辑右移，然后将结果写入_rd′_。 移位量在_shamt_字段中编码。
+对于RV128C，移位量为零用于编码移位64。
+此外，对于RV128C，移位量进行符号扩展，因此合法的移位量是1-31，64，以及96-127。 C.SRLI扩展为`srli rd′, rd′, shamt`，除了RV128C中`shamt=0`，扩展为`srli rd′, rd′, 64`。
+
+对于RV32C，_shamt[5]_必须为零；代码点_shamt[5]_=1指定用于自定义扩展。 对于RV32C和RV64C，移位量必须非零；代码点_shamt_=0是HINTs。
+
+C.SRAI定义与C.SRLI类似，但执行算术右移。 C.SRAI扩展为`srai rd′, rd′, shamt`。
+
+[NOTE]
+====
+左移通常比右移更频繁的，因为左移经常用于缩放地址值。 因此右移获得了较少的编码空间，并被放置在一个所有其他立即数都符号扩展的编码象限。 对于RV128，决定将6位移位量立即数也符号扩展。
+除了减少解码复杂性外，我们相信96-127的右移量将比64-95更有用，以允许提取位于128位地址指针高部分的标记。 我们注意到RV128C不会和RV32C和RV64C在同一点冻结，以允许评估128位地址空间代码的典型使用情况。
+====
+
+include::images/wavedrom/c-andi.adoc[]
+
+//.C.ANDI format
+
+(((压缩，C.ANDI)))
+
+C.ANDI是CB格式指令，计算寄存器_rd′_中值与符号扩展6位立即数的按位AND，然后将结果写入_rd′_。 C.ANDI扩展为`andi rd′, rd′, imm`。
+
+==== 整数寄存器-寄存器操作
+
+include::images/wavedrom/c-int-reg-to-reg-cr-format.adoc[]
+
+//C.CR format
+
+((((压缩。C.CR))))
+这些指令使用CR格式。
+
+C.MV将寄存器_rs2_中的值复制到寄存器_rd_中。 C.MV扩展为`add rd, x0, rs2`。 C.MV仅在`rs2≠x0`时有效，代码点`rs2=x0`对应于C.JR指令。 代码点`rs2≠x0`和`rd=x0`是HINTs。
+
+[TIP]
+====
+_C.MV扩展到不同于规范MV伪指令的指令，而后者使用ADDI。 处理MV的实现，例如果使用寄存器重命名硬件，可能发现将C.MV扩展为MV而不是ADD较为方便，但需稍微增加硬件成本。_
+====
+
+C.ADD将寄存器_rd_和_rs2_中的值相加，并将结果写入寄存器_rd_。 C.ADD扩展为`add rd, rd, rs2`。 C.ADD仅在`rs2≠x0`时有效，代码点`rs2=x0`对应于C.JALR和C.EBREAK指令。 代码点`rs2≠x0`和`rd=x0`是HINTs。
+
+include::images/wavedrom/c-int-reg-to-reg-ca-format.adoc[]
+
+//C.CA format
+
+((((压缩。C.CA))))
+
+这些指令使用CA格式。
+
+`C.AND`计算寄存器_rd′_和_rs2′_中值的按位`AND`，然后将结果写入寄存器_rd′_。 `C.AND`扩展为*`_and rd′, rd′, rs2′_`*。
+
+`C.OR`计算寄存器_rd′_和_rs2′_中值的按位`OR`，然后将结果写入寄存器_rd′_。 `C.OR`扩展为*`_or rd′, rd′, rs2′_`*。
+
+`C.XOR`计算寄存器_rd′_和_rs2′_中值的按位`XOR`，然后将结果写入寄存器_rd′_。 `C.XOR`扩展为*`_xor rd′, rd′, rs2′_`*。
+
+`C.SUB`从寄存器_rd′_中的值中减去寄存器_rs2′_中的值，然后将结果写入寄存器_rd′_。 `C.SUB`扩展为*`_sub rd′, rd′, rs2′_`*。
+
+`C.ADDW`是一个仅限RV64C/RV128C的指令，它将寄存器_rd′_和_rs2′_中的值相加，然后对和的低32位进行符号扩展后将结果写入寄存器_rd′_。 `C.ADDW`扩展为*`_addw rd′, rd′, rs2′_`*。
+
+`C.SUBW`是一个仅限RV64C/RV128C的指令，从寄存器_rd′_中的值减去寄存器_rs2′_中的值，然后对差的低32位进行符号扩展后将结果写入寄存器_rd′_。
+`C.SUBW`扩展为*`_subw rd′, rd′, rs2′_`*。
+
+[NOTE]
+====
+这六条指令单独并不能提供大量节省，但它们占用的编码空间不多，且易于实现，作为一个整体在静态和动态压缩方面提供了值得的改进。
+====
+
+==== 定义非法指令
+
+include::images/wavedrom/c-def-illegal-inst.adoc[]
+((((压缩。C.DIINST))))
+
+16位指令中所有位均为零的指令永久保留为非法指令。
+
+[NOTE]
+====
+我们保留全部为零的指令为非法指令，以帮助捕获尝试执行已清零或不存在的内存空间部分。 全零值不应在任何非标准扩展中重新定义。 同样，我们保留所有位设为1的指令（对应于RISC-V可变长编码方案的很长指令）为非法指令，以抓住在不存在的内存区域中看到的另一种常见值。
+====
+
+==== NOP指令
+
+include::images/wavedrom/c-nop-instr.adoc[]
+((((压缩。C.NOPINSTR))))
+
+`C.NOP`是一种CI格式指令，不改变任何用户可见的状态，除了推进`pc`和增加任何适用的性能计数器。 `C.NOP`扩展为`nop`。 `C.NOP`仅在_imm_=0时有效；代码点_imm_≠0编码为HINTs。
+
+==== 断点指令
+
+include::images/wavedrom/c-breakpoint-instr.adoc[]
+((((压缩。C.BREAKPOINTINSTR))))
+
+调试器可以使用`C.EBREAK`指令，该指令扩展为`ebreak`，使控制转回调试环境。
+`C.EBREAK`与`C.ADD`指令共享操作码，但_rd_和_rs2_均为零，因此也可以使用`CR`格式。
+
+=== LR/SC序列中C指令的使用
+
+在支持C扩展的实现中，如<<sec:lrscseq>>中描述，允许在受限LR/SC序列中使用的I指令的压缩形式也可以在受限LR/SC序列中使用。
+
+[NOTE]
+====
+这意味着任何声称支持 A 和 C 扩展的实现必须确保包含有效 C 指令的 LR/SC 序列最终会完成。
+====
+
+[[rvc-hints]]
+=== HINT 指令
+
+部分 RVC 编码空间保留用于微架构 HINT。 类似于 RV32I 基础 ISA 中的 HINT（见<<rv32i-hints>>），这些指令不修改任何架构状态，只推进 `pc` 和任何适用的性能计数器。 在忽略它们的实现中，HINT 被执行为无操作。
+
+RVC HINT 被编码为不修改架构状态的计算指令，原因是 _rd_=`x0`（例如 `C.ADD _x0_, _t0_`），或者因为 _rd_ 被覆盖为其自身的副本（例如 `C.ADDI _t0_, 0`）。
+
+[NOTE]
+====
+选择这种 HINT 编码是为了让简单的实现可以完全忽略 HINT，改为执行不改动架构状态的常规计算指令。
+====
+
+RVC HINT 不一定扩展到其 RVI HINT 对应项。 例如，`C.ADD` _x0_, _a0_ 可能不会编码为与 `ADD` _x0_, _x0_, _a0_ 相同的 HINT。
+
+[NOTE]
+====
+不要求 RVC HINT 扩展到 RVI HINT 的主要原因是 HINT 不太可能以与底层计算指令相同的方式压缩。 此外，分离 RVC 和 RVI HINT 映射允许将稀缺的 RVC HINT 空间分配给最受欢迎的 HINT，尤其是那些适合宏操作融合的 HINT。
+====
+
+<<rvc-t-hints, 表 32>> 列出了所有 RVC HINT 代码点。 对于 RV32C，78%的 HINT 空间保留用于标准 HINT。 HINT 空间的其余部分指定用于自定义 HINT；在此子空间中不会定义任何标准 HINT。
+
+[[rvc-t-hints]]
+.RVC HINT 指令。
+[cols="<,<,>,<", options="header"]
+|===
+|指令
+|约束
+|代码点
+|目的
+
+|C.NOP |_imm_≠0 |63 .6+.^|_指定用于未来的标准使用_
+
+|C.ADDI |_rd_≠`x0`, _imm_=0 |31
+
+|C.LI |_rd_=`x0` |64
+
+|C.LUI |_rd_=`x0`, _imm_≠0 |63
+
+|C.MV |_rd_=`x0`, _rs2_≠`x0` |31
+
+|C.ADD |_rd_=`x0`, _rs2_≠`x0`, _rs2_≠`x2-x5` |27
+
+|C.ADD |_rd_=`x0`, _rs2_≠`x2-x5` |4 |(rs2=x2) C.NTL.P1 (rs2=x3) C.NTL.PALL (rs2=x4) C.NTL.S1 (rs2=x5) C.NTL.ALL
+
+|C.SLLI |_rd_=`x0`, _imm_≠0 |31 (RV32), 63 (RV64/128) .5+.^|_指定用于自定义使用_
+
+|C.SLLI64 |_rd_=_x0_ |1
+
+|C.SLLI64 |_rd_≠`x0`, RV32 和 RV64 仅 |31
+
+|C.SRLI64 |仅 RV32 和 RV64 |8
+
+|C.SRAI64 |仅 RV32 和 RV64 |8
+|===
+
+=== RVC 指令集列表
+
+<<rvcopcodemap>> 显示 RVC 的主要操作码图。 表格的每一行对应于编码空间的一个象限。 最后一个象限，设置了两个最低有效位，对应于宽度超过 16 位的指令，包括基础 ISA 中的指令。 某些指令仅在特定操作数上有效；在无效时，它们要么被标记为 _RES_，表明该操作码保留用于未来的标准扩展；要么被标记为 _Custom_，表明该操作码指定用于自定义扩展；或者被标记为 _HINT_，表明操作码保留用于微架构提示（详见 <<rvc-hints, 第 18.7 节>>）。
+
+<<<
+
+[[rvcopcodemap]]
+.RVC 操作码映射指令。
+[%autowidth, float="center", align="center", cols="\">,^,^,^,^,^,^,^,^,^,<"]
+|===
+2+>|inst[15:13] +
+inst[1:0]
+^.^s|000 ^.^s|001 ^.^s|010 ^.^s|011 ^.^s|100 ^.^s|101 ^.^s|110 |111 |
+
+2+>.^|00 .^|ADDI4SPN ^.^|FLD +
+FLD +
+LQ
+|LW |FLW +
+LD +
+LD
+|_保留_ |FSD +
+FSD +
+SQ
+|SW |FSW +
+SD +
+SD
+^.^|RV32 +
+RV64 +
+RV128
+
+2+>.^|01 ^.^|ADDI ^.^|JAL +
+ADDIW +
+ADDIW
+^.^|LI ^.^|LUI/ADDI16SP ^.^|MISC-ALU ^.^|J |BEQZ |BNEZ |RV32 +
+RV64 +
+RV128
+
+2+>.^|10 ^.^|SLLI ^.^|FLDSP +
+FLDSP +
+LQSP
+|LWSP |FLWSP +
+LDSP +
+LDSP
+|J[AL]R/MV/ADD |FSDSP +
+FSDSP +
+SQSP
+|SWSP |FSWSP +
+SDSP +
+SDSP
+^.^|RV32 +
+RV64 +
+RV128
+
+2+>.^|11 9+^|>16b
+|===
+
+<<rvc-instr-table0>>、<<rvc-instr-table1>>和<<rvc-instr-table2>>列出了RVC指令。
+
+include::images/bytefield/rvc-instr-quad0.adoc[]
+
+//include::images/bytefield/rvc-instr-quad0.png[]
+
+include::images/bytefield/rvc-instr-quad1.adoc[]
+
+//include::images/bytefield/rvc-instr-quad1.png[]
+
+include::images/bytefield/rvc-instr-quad2.adoc[]
+
+//include::images/bytefield/rvc-instr-quad2.png[]
