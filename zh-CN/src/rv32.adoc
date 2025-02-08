@@ -1,55 +1,36 @@
 [[rv32]]
-== RV32I Base Integer Instruction Set, Version 2.1
+== RV32I 基本整数指令集，版本 2.1
 
-This chapter describes the RV32I base integer instruction set.
+本章介绍了 RV32I 基本整数指令集。
 
 [TIP]
 ====
-RV32I was designed to be sufficient to form a compiler target and to
-support modern operating system environments. The ISA was also designed
-to reduce the hardware required in a minimal implementation. RV32I
-contains 40 unique instructions, though a simple implementation might
-cover the ECALL/EBREAK instructions with a single SYSTEM hardware
-instruction that always traps and might be able to implement the FENCE
-instruction as a NOP, reducing base instruction count to 38 total. RV32I
-can emulate almost any other ISA extension (except the A extension,
-which requires additional hardware support for atomicity).
+RV32I 旨在成为编译器目标，并支持现代操作系统环境。 此指令集架构还旨在减少最低限度实现所需的硬件。 RV32I 包含 40 条独特的指令，尽管简单实现可能用一个始终陷入的 SYSTEM 硬指令涵盖 ECALL/EBREAK 指令，并可能将 FENCE 指令实现为 NOP，从而将基本指令数减少到总计 38。 RV32I 可以模拟几乎任何其他指令集架构扩展（除 A 扩展外，它需要额外的硬件支持以实现原子性）。
 
-In practice, a hardware implementation including the machine-mode
-privileged architecture will also require the 6 CSR instructions.
+实践中，包括机器模式特权架构在内的硬件实现还需要 6 条 CSR 指令。
 
-Subsets of the base integer ISA might be useful for pedagogical
-purposes, but the base has been defined such that there should be little
-incentive to subset a real hardware implementation beyond omitting
-support for misaligned memory accesses and treating all SYSTEM
-instructions as a single trap.
+基本整数指令集架构的子集可能在教学目的上有用，但基本集已定义，不应有太多动力在真正的硬件实现中使用子集，除了省略对未对齐内存访问的支持并将所有 SYSTEM 指令视为单一陷阱。
 ====
 
 [NOTE]
 ====
-The standard RISC-V assembly language syntax is documented in the
-Assembly Programmer's Manual cite:[riscv-asm-manual].
+标准 RISC-V 汇编语言语法记录在《汇编程序员手册》cite:[riscv-asm-manual] 中。
 ====
 
 [NOTE]
 ====
-Most of the commentary for RV32I also applies to the RV64I base.
+RV32I 的大部分评论也适用于 RV64I 基本集。
 ====
 
-=== Programmers' Model for Base Integer ISA
+=== 基本整数指令集架构的程序员模型
 
-<<gprs>> shows the unprivileged state for the base
-integer ISA. For RV32I, the 32 `x` registers are each 32 bits wide,
-i.e., `XLEN=32`. Register `x0` is hardwired with all bits equal to 0.
-General purpose registers `x1-x31` hold values that various
-instructions interpret as a collection of Boolean values, or as two's
-complement signed binary integers or unsigned binary integers.
+<<gprs>> 显示了基本整数ISA的非特权状态。 对于 RV32I，32 个 `x` 寄存器每个宽 32 位，即 `XLEN=32`。 寄存器 `x0` 硬接线为所有位均为 0。
+通用寄存器 `x1-x31` 存储各种指令解释为布尔值集合或二进制补码整数或无符号二进制整数的值。
 
-There is one additional unprivileged register: the program counter `pc`
-holds the address of the current instruction.
+还有一个额外的非特权寄存器：程序计数器 `pc` 存放当前指令的地址。
 
 [[gprs]]
-.RISC-V base unprivileged integer register state.
+.RISC-V 基本非特权整数寄存器状态。
 [cols="<,^,>", options="header", width="50%", align="center", grid="rows"]
 |===
 <|[.small]#XLEN-1#
@@ -131,191 +112,97 @@ holds the address of the current instruction.
 
 [NOTE]
 ====
-There is no dedicated stack pointer or subroutine return address link
-register in the Base Integer ISA; the instruction encoding allows any
-`x` register to be used for these purposes. However, the standard
-software calling convention uses register `x1` to hold the return
-address for a call, with register `x5` available as an alternate link
-register. The standard calling convention uses register `x2` as the
-stack pointer.
+基本整数指令集架构中没有专用的堆栈指针或子程序返回地址链接寄存器；指令编码允许使用任何 `x` 寄存器来实现这些目的。 但是，标准软件调用约定使用寄存器 `x1` 来存储调用的返回地址，寄存器 `x5` 可用作备用链接寄存器。 标准调用约定使用寄存器 `x2` 作为堆栈指针。
 
-Hardware might choose to accelerate function calls and returns that use
-`x1` or `x5`. See the descriptions of the JAL and JALR instructions.
+硬件可以选择加速使用 `x1` 或 `x5` 的函数调用和返回。 请参阅 JAL 和 JALR 指令的说明。
 
-The optional compressed 16-bit instruction format is designed around the
-assumption that `x1` is the return address register and `x2` is the
-stack pointer. Software using other conventions will operate correctly
-but may have greater code size.
+可选的压缩 16 位指令格式设计的假设是 `x1` 是返回地址寄存器，`x2` 是堆栈指针。 使用其他约定的软件将正确运行，但可能会使代码大小更大。
 
-The number of available architectural registers can have large impacts
-on code size, performance, and energy consumption. Although 16 registers
-would arguably be sufficient for an integer ISA running compiled code,
-it is impossible to encode a complete ISA with 16 registers in 16-bit
-instructions using a 3-address format. Although a 2-address format would
-be possible, it would increase instruction count and lower efficiency.
-We wanted to avoid intermediate instruction sizes (such as Xtensa's
-24-bit instructions) to simplify base hardware implementations, and once
-a 32-bit instruction size was adopted, it was straightforward to support
-32 integer registers. A larger number of integer registers also helps
-performance on high-performance code, where there can be extensive use
-of loop unrolling, software pipelining, and cache tiling.
+可用的架构寄存器数量会对代码大小、性能和能耗产生重大影响。 尽管可以认为 16 个寄存器对于运行编译代码的整数指令集足够，但使用 3 地址格式在 16 位指令中编码完整指令集是不可能的。 虽然可以采用 2 地址格式，但这会增加指令数并降低效率。
+我们希望避免中间指令大小（如 Xtensa 的 24 位指令），以简化基本硬件实现，一旦采用 32 位指令大小，就可以很容易地支持 32 个整数寄存器。 更多的整数寄存器也有助于提高高性能代码的性能，这些代码中可能会广泛使用循环展开、软件流水线和缓存切片。
 
-For these reasons, we chose a conventional size of 32 integer registers
-for RV32I. Dynamic register usage tends to be dominated by a few
-frequently accessed registers, and regfile implementations can be
-optimized to reduce access energy for the frequently accessed
-registers cite:[jtseng:sbbci]. The optional compressed 16-bit instruction format mostly
-only accesses 8 registers and hence can provide a dense instruction
-encoding, while additional instruction-set extensions could support a
-much larger register space (either flat or hierarchical) if desired.
+出于这些原因，我们为 RV32I 选择了 32 个整数寄存器的常规大小。 动态寄存器使用往往由几个经常访问的寄存器主导，并且寄存器文件实现可以优化以减少频繁访问寄存器的访问能耗 cite:[jtseng:sbbci]。 可选的压缩 16 位指令格式大多仅访问 8 个寄存器，因此可以提供密集的指令编码，而如果需要，额外的指令集扩展可以支持更大的寄存器空间（平面或层次结构）。
 
-For resource-constrained embedded applications, we have defined the
-RV32E subset, which only has 16 registers
-(<<rv32e>>).
+对于资源受限的嵌入式应用，我们定义了 RV32E 子集，其中只有 16 个寄存器
+(<<rv32e>>)。
 ====
 
-=== Base Instruction Formats
+=== 基本指令格式
 
-In the base RV32I ISA, there are four core instruction formats
-(R/I/S/U), as shown in <<base_instr>>. All are a fixed 32
-bits in length. The base ISA has `IALIGN=32`, meaning that instructions must be aligned on a four-byte boundary in memory. An
-instruction-address-misaligned exception is generated on a taken branch
-or unconditional jump if the target address is not `IALIGN-bit` aligned.
-This exception is reported on the branch or jump instruction, not on the
-target instruction. No instruction-address-misaligned exception is
-generated for a conditional branch that is not taken.
+在基本 RV32I ISA 中，有四种核心指令格式 (R/I/S/U)，如 <<base_instr>> 所示。 它们长度均为固定的 32 位。 基本指令集具有 `IALIGN=32`，意味着指令必须在内存中对齐到四字节边界。 如果目标地址没有对齐到 `IALIGN-bit`，则在执行分支或无条件跳转时会生成指令地址未对齐异常。
+该异常是在分支或跳转指令上报告的，而不是目标指令。 对于未执行的条件分支，不会生成指令地址未对齐异常。
 
 [NOTE]
 ====
-The alignment constraint for base ISA instructions is relaxed to a
-two-byte boundary when instruction extensions with 16-bit lengths or
-other odd multiples of 16-bit lengths are added (i.e., IALIGN=16).
+当添加具有 16 位长度或其他奇数倍 16 位长度的指令扩展时，基本指令集的对齐约束放宽到两字节边界（即 IALIGN=16）。
 
-Instruction-address-misaligned exceptions are reported on the branch or
-jump that would cause instruction misalignment to help debugging, and to
-simplify hardware design for systems with IALIGN=32, where these are the
-only places where misalignment can occur.
+指令地址未对齐异常在会导致指令未对齐的分支或跳转指令上报告，以帮助调试，并简化 IALIGN=32 的系统的硬件设计，这些是未对齐可能发生的唯一位置。
 ====
 
-The behavior upon decoding a reserved instruction is UNSPECIFIED.
+对于保留指令的解码行为未指定。
 
 [NOTE]
 ====
-Some platforms may require that opcodes reserved for standard use raise
-an illegal-instruction exception. Other platforms may permit reserved
-opcode space be used for non-conforming extensions.
+某些平台可能要求保留用于标准用途的操作码引发非法指令异常。 其他平台可能允许保留的操作码空间用于不符合规范的扩展。
 ====
 
-The RISC-V ISA keeps the source (_rs1_ and _rs2_) and destination (_rd_)
-registers at the same position in all formats to simplify decoding.
-Except for the 5-bit immediates used in CSR instructions
-(<<csrinsts>>), immediates are always
-sign-extended, and are generally packed towards the leftmost available
-bits in the instruction and have been allocated to reduce hardware
-complexity. In particular, the sign bit for all immediates is always in
-bit 31 of the instruction to speed sign-extension circuitry.
+RISC-V ISA 在所有格式中保持源（_rs1_ 和 _rs2_）和目标（_rd_）寄存器在同一位置以简化解码。
+除 CSR 指令中使用的 5 位立即数 (<<csrinsts>>) 外，即时数始终为符号扩展，并且通常填充到指令中最左可用的位并已分配以减少硬件复杂性。 特别是，所有立即数的符号位始终位于指令的第 31 位以加快符号扩展电路。
 
 include::images/wavedrom/instruction_formats.adoc[]
 
 [[base_instr, Base instruction formats]]
-RISC-V base instruction formats. Each immediate subfield is labeled with the bit position (imm[x]) in the immediate value being produced, rather than the bit position within the instruction's immediate field as is usually done.
+RISC-V 基本指令格式。 每个立即数子字段用正在生成的立即数中的位位置 (imm[x]) 标记，而不是通常在指令的立即字段内的位位置。
 
 [NOTE]
 ====
-Decoding register specifiers is usually on the critical paths in
-implementations, and so the instruction format was chosen to keep all
-register specifiers at the same position in all formats at the expense
-of having to move immediate bits across formats (a property shared with
-RISC-IV aka. SPUR cite:[spur-jsscc1989]).
+解码寄存器说明符通常在实现中的关键路径上，因此选择了指令格式，以保持所有寄存器说明符在所有格式中的相同位置，代价是必须在格式之间移动立即数位（与 RISC-IV aka 共享的属性）。 SPUR cite:[spur-jsscc1989]）。
 
-In practice, most immediates are either small or require all XLEN bits.
-We chose an asymmetric immediate split (12 bits in regular instructions
-plus a special load-upper-immediate instruction with 20 bits) to
-increase the opcode space available for regular instructions.
+在实践中，大多数立即数要么很小，要么需要所有 XLEN 位。
+我们选择不对称的立即数分割（常规指令为 12 位加上一个特殊的载入上部立即数指令为 20 位）以增加可用于常规指令的操作码空间。
 
-Immediates are sign-extended because we did not observe a benefit to
-using zero-extension for some immediates as in the MIPS ISA and wanted
-to keep the ISA as simple as possible.
+立即数是符号扩展的，因为我们没有发现使用零扩展一些立即数（如在 MIPS ISA 中）的益处，并且希望保持 ISA 尽可能简单。
 ====
 
-=== Immediate Encoding Variants
+=== 立即数编码变体
 
-There are a further two variants of the instruction formats (B/J) based
-on the handling of immediates, as shown in <<baseinstformatsimm>>.
+基于立即数处理，还有两个指令格式变体（B/J），如 <<baseinstformatsimm>> 中所示。
 
 include::images/wavedrom/immediate_variants.adoc[]
 
 //.RISC-V base instruction formats showing immediate variants.
 
-The only difference between the S and B formats is that the 12-bit
-immediate field is used to encode branch offsets in multiples of 2 in
-the B format. Instead of shifting all bits in the instruction-encoded
-immediate left by one in hardware as is conventionally done, the middle
-bits (imm[10:1]) and sign bit stay in fixed positions, while the lowest
-bit in S format (inst[7]) encodes a high-order bit in B format.
+S 和 B 格式之间的唯一区别在于 B 格式中 12 位立即字段用于编码以 2 的倍数的分支偏移。 与惯常做法不同，未将指令编码的立即数所有位在硬件中左移一位，而是中间位 (imm[10:1]) 和符号位保持在固定位置中，而 S 格式中的最低位 (inst[7]) 在 B 格式中编码为高位。
 
-Similarly, the only difference between the U and J formats is that the
-20-bit immediate is shifted left by 12 bits to form U immediates and by
-1 bit to form J immediates. The location of instruction bits in the U
-and J format immediates is chosen to maximize overlap with the other
-formats and with each other.
+类似地，U 和 J 格式之间的唯一区别在于 20 位立即数左移 12 位形成 U 立即数，并左移1位形成 J 立即数。 U 和 J 格式立即数中的指令位位置选择最大化与其他格式和彼此的重叠。
 
-<<immtypes>> shows the immediates produced by
-each of the base instruction formats, and is labeled to show which
-instruction bit (inst[_y_]) produces each bit of the immediate value.
+<<immtypes>> 显示每种基本指令格式产生的立即数，并标记说明哪个指令位 (inst[_y_]) 产生立即数值的每个位。
 
 include::images/wavedrom/immediate.adoc[]
 
-The fields are labeled with the instruction bits used to construct their value.  Sign extensions always uses inst[31].
+这些字段用用于构造其值的指令位标记。  符号扩展始终使用 inst[31]。
 
 [NOTE]
 ====
-Sign-extension is one of the most critical operations on immediates
-(particularly for XLEN>32), and in RISC-V the sign bit for
-all immediates is always held in bit 31 of the instruction to allow
-sign-extension to proceed in parallel with instruction decoding.
+符号扩展是立即数上最关键的操作之一（特别是对于 XLEN>32），在 RISC-V 中，所有立即数的符号位始终位于指令的第 31 位，以允许符号扩展与指令解码并行进行。
 
-Although more complex implementations might have separate adders for
-branch and jump calculations and so would not benefit from keeping the
-location of immediate bits constant across types of instruction, we
-wanted to reduce the hardware cost of the simplest implementations. By
-rotating bits in the instruction encoding of B and J immediates instead
-of using dynamic hardware muxes to multiply the immediate by 2, we
-reduce instruction signal fanout and immediate mux costs by around a
-factor of 2. The scrambled immediate encoding will add negligible time
-to static or ahead-of-time compilation. For dynamic generation of
-instructions, there is some small additional overhead, but the most
-common short forward branches have straightforward immediate encodings.
+尽管更复杂的实现可能会有独立的加法器用于分支和跳转计算，因此不会从在各种指令中保持立即数位位置不变中获益，我们希望降低最简单实现实现的硬件成本。 通过旋转 B 和 J 立即数的指令编码中的位而不是使用动态硬件多路复用器将立即数乘以 2，我们将指令信号扇出和立即多路复用器成本减少了约 2 倍。 混乱的立即数编码几乎不会增加静态或预编译时间。 对于动态生成指令，有一些小的额外开销，但最常见的短向前分支具有简单的立即数字编码。
 ====
 
-=== Integer Computational Instructions
+=== 整数计算指令
 
-Most integer computational instructions operate on `XLEN` bits of values
-held in the integer register file. Integer computational instructions
-are either encoded as register-immediate operations using the I-type
-format or as register-register operations using the R-type format. The
-destination is register _rd_ for both register-immediate and
-register-register instructions. No integer computational instructions
-cause arithmetic exceptions.
+大多数整数计算指令操作在整数寄存器文件中持有的 `XLEN` 位值上。 整数计算指令要么以 I 型格式编码为寄存器-立即操作，要么以 R 型格式编码为寄存器-寄存器操作。 寄存器-立即指令和寄存器-寄存器指令的目标寄存器均为 _rd_。 没有整数计算指令会导致算术异常。
 
 [TIP]
 ====
-We did not include special instruction-set support for overflow checks
-on integer arithmetic operations in the base instruction set, as many
-overflow checks can be cheaply implemented using RISC-V branches.
-Overflow checking for unsigned addition requires only a single
-additional branch instruction after the addition:
-`add t0, t1, t2; bltu t0, t1, overflow`.
+我们没有在基本指令集中包括用于整数算术操作的溢出检查的特殊指令集支持，因为许多溢出检查可以通过 RISC-V 分支廉价实现。
+无符号加法的溢出检查仅在加法后需要一个额外的分支指令：
+`add t0, t1, t2; bltu t0, t1, overflow`。
 
-For signed addition, if one operand's sign is known, overflow checking
-requires only a single branch after the addition:
-`addi t0, t1, +imm; blt t0, t1, overflow`. This covers the common case
-of addition with an immediate operand.
+对于符号相同的加法，如果已知一个操作数的符号，溢出检查只需要一个加法后的分支：
+`addi t0, t1, +imm; blt t0, t1, overflow`。 这涵盖了带有立即子操作数的加法的常见情况。
 
-For general signed addition, three additional instructions after the
-addition are required, leveraging the observation that the sum should be
-less than one of the operands if and only if the other operand is
-negative.
+对于一般符号相同的加法，除了加法后需要三个额外的指令，利用了这样的观察：只有当另外一个操作数是负数时，和才应该小于其中一个操作数。
 
 [source,text]
 ....
@@ -325,179 +212,97 @@ negative.
          bne t3, t4, overflow
 ....
 
-In RV64I, checks of 32-bit signed additions can be optimized further by
-comparing the results of ADD and ADDW on the operands.
+在 RV64I 中，通过比较操作数上的 ADD 和 ADDW 的结果，可以进一步优化 32 位符号相同加法的检查。
 ====
 
-==== Integer Register-Immediate Instructions
+==== 整数寄存器-立即指令
 
 include::images/wavedrom/integer_computational.adoc[]
 
 //.Integer Computational Instructions
 
-ADDI adds the sign-extended 12-bit immediate to register _rs1_.
-Arithmetic overflow is ignored and the result is simply the low XLEN
-bits of the result. ADDI _rd, rs1, 0_ is used to implement the MV _rd,
-rs1_ assembler pseudoinstruction.
+ADDI 将符号扩展的 12 位立即数添加到寄存器 _rs1_。
+算术溢出被忽略，结果只是结果的低 XLEN 位。 ADDI _rd, rs1, 0_ 用于实现 MV _rd, rs1_ 汇编伪指令。
 
-SLTI (set less than immediate) places the value 1 in register _rd_ if
-register _rs1_ is less than the sign-extended immediate when both are
-treated as signed numbers, else 0 is written to _rd_. SLTIU is similar
-but compares the values as unsigned numbers (i.e., the immediate is
-first sign-extended to XLEN bits then treated as an unsigned number).
-Note, SLTIU _rd, rs1, 1_ sets _rd_ to 1 if _rs1_ equals zero, otherwise
-sets _rd_ to 0 (assembler pseudoinstruction SEQZ _rd, rs_).
+如果寄存器 _rs1_ 小于符号扩展的立即数，SLTI（设置小于立即数）将值 1 放在寄存器 _rd_ 中（当两个都被视为有符号数时），否则将 0 写入 _rd_。 SLTIU 类似，但将值视为无符号数进行比较（即立即数首先符号扩展到 XLEN 位，然后视为无符号数）。
+注意，如果 _rs1_ 等于零，SLTIU _rd, rs1, 1_ 将 _rd_ 设置为 1，否则将 _rd_ 设置为 0（汇编伪指令 SEQZ _rd, rs_）。
 
-ANDI, ORI, XORI are logical operations that perform bitwise AND, OR, and
-XOR on register _rs1_ and the sign-extended 12-bit immediate and place
-the result in _rd_. Note, XORI _rd, rs1, -1_ performs a bitwise logical
-inversion of register _rs1_ (assembler pseudoinstruction NOT _rd, rs_).
+ANDI、ORI、XORI 是逻辑操作，在寄存器 _rs1_ 和符号扩展的 12 位立即数上执行按位与、或、异或运算，并将结果放入 _rd_。 请注意，XORI _rd, rs1, -1_ 对寄存器 _rs1_ 执行按位逻辑反转（汇编伪指令 NOT _rd, rs_）。
 
 include::images/wavedrom/int-comp-slli-srli-srai.adoc[]
 
 //.Integer register-immediate, SLLI, SRLI, SRAI
 
-Shifts by a constant are encoded as a specialization of the I-type
-format. The operand to be shifted is in _rs1_, and the shift amount is
-encoded in the lower 5 bits of the I-immediate field. The right shift
-type is encoded in bit 30. SLLI is a logical left shift (zeros are
-shifted into the lower bits); SRLI is a logical right shift (zeros are
-shifted into the upper bits); and SRAI is an arithmetic right shift (the
-original sign bit is copied into the vacated upper bits).
+以常数为单位的移位被编码为 I 型格式的特化。 要移位的操作数位于 _rs1_ 中，移位量编码在 I-立即字段的低 5 位中。 右移类型编码在第 30 位。 SLLI 是逻辑左移（零被移入低位）；SRLI 是逻辑右移（零被移入高位）；SRAI 是算术右移（原来的符号位被复制到空出的高位中）。
 
 include::images/wavedrom/int-comp-lui-aiupc.adoc[]
 
 //.Integer register-immediate, U-immediate
 
-LUI (load upper immediate) is used to build 32-bit constants and uses
-the U-type format. LUI places the 32-bit U-immediate value into the
-destination register _rd_, filling in the lowest 12 bits with zeros.
+LUI（载入上部立即数）用于构建 32 位常数，使用 U 型格式。 LUI 将 32 位 U-立即数值放入目标寄存器 _rd_，填充最低位 12 为零。
 
-AUIPC (add upper immediate to `pc`) is used to build `pc`-relative
-addresses and uses the U-type format. AUIPC forms a 32-bit offset from
-the U-immediate, filling in the lowest 12 bits with zeros, adds this
-offset to the address of the AUIPC instruction, then places the result
-in register _rd_.
+AUIPC（给 `pc` 增加上部立即数）用于构建 `pc` 相对地址，并使用 U 型格式。 AUIPC 从 U-立即数生成 32 位偏移量，填充最低 12 为零，将此偏移量加到 AUIPC 指令的地址，然后将结果放入寄存器 _rd_ 。
 
 [NOTE]
 ====
-The assembly syntax for `lui` and `auipc` does not represent the lower
-12 bits of the U-immediate, which are always zero.
+`lui` 和 `auipc` 的汇编语法不表示 U-立即数的低 12 位，其始终为零。
 
-The AUIPC instruction supports two-instruction sequences to access
-arbitrary offsets from the PC for both control-flow transfers and data
-accesses. The combination of an AUIPC and the 12-bit immediate in a JALR
-can transfer control to any 32-bit PC-relative address, while an AUIPC
-plus the 12-bit immediate offset in regular load or store instructions
-can access any 32-bit PC-relative data address.
+AUIPC 指令支持两指令序列来访问 PC 的任意偏移量，无论控制流传输和数据访问。 AUIPC 与 JALR 中的 12 位立即数组合可以将控制转移到任何 32 位 PC 相对地址，而 AUIPC 加上常规加载或存储指令中的 12 位立即数偏移量可以访问任何 32 位 PC 相对数据地址。
 
-The current PC can be obtained by setting the U-immediate to 0. Although
-a JAL +4 instruction could also be used to obtain the local PC (of the
-instruction following the JAL), it might cause pipeline breaks in
-simpler microarchitectures or pollute BTB structures in more complex
-microarchitectures.
+通过将 U-立即数设置为 0 来获得当前 PC。 尽管 JAL +4 指令也可用于获取局部 PC（紧接 JAL 的指令），但它可能会在更简单的微架构中导致流水线中断或在更复杂的微架构中污染 BTB 结构。
 ====
 
-==== Integer Register-Register Operations
+==== 整数寄存器-寄存器操作
 
-RV32I defines several arithmetic R-type operations. All operations read
-the _rs1_ and _rs2_ registers as source operands and write the result
-into register _rd_. The _funct7_ and _funct3_ fields select the type of
-operation.
+RV32I 定义了几种算术 R 型操作。 所有操作读取寄存器 _rs1_ 和 _rs2_ 作为源操作数，并将结果写入寄存 _rd_。 _funct7_ 和 _funct3_ 字段选择操作的类型。
 
 include::images/wavedrom/int_reg-reg.adoc[]
 
 //.Integer register-register
 
-ADD performs the addition of _rs1_ and _rs2_. SUB performs the
-subtraction of _rs2_ from _rs1_. Overflows are ignored and the low XLEN
-bits of results are written to the destination _rd_. SLT and SLTU
-perform signed and unsigned compares respectively, writing 1 to _rd_ if
-_rs1_ < _rs2_, 0 otherwise. Note, SLTU _rd_, _x0_, _rs2_ sets _rd_ to 1 if
-_rs2_ is not equal to zero, otherwise sets _rd_ to zero (assembler
-pseudoinstruction SNEZ _rd, rs_). AND, OR, and XOR perform bitwise
-logical operations.
+ADD 执行 _rs1_ 和 _rs2_ 的加法。 SUB 执行从 _rs1_ 中减去 _rs2_。 溢出被忽略，并且结果的低 XLEN 位被写入目标 _rd_。 SLT 和 SLTU 分别执行有符号和无符号比较，如果 _rs1_ < _rs2_ 则写入 1 到 _rd_，否则为 0。 注意，如果 _rs2_ 不等于零，SLTU _rd_, _x0_, _rs2_ 将 _rd_ 设置为 1，否则将 _rd_ 设置为零（汇编伪指令 SNEZ _rd, rs_）。 AND、OR 和 XOR 执行按位逻辑运算。
 
-SLL, SRL, and SRA perform logical left, logical right, and arithmetic
-right shifts on the value in register _rs1_ by the shift amount held in
-the lower 5 bits of register _rs2_.
+SLL、SRL 和 SRA 通过寄存器 _rs2_ 的低 5 位中的移位量对寄存器 _rs1_ 中的值执行逻辑左移、逻辑右移和算术右移。
 
-==== NOP Instruction
+==== NOP 指令
 
 include::images/wavedrom/nop.adoc[]
 
 //.NOP instructions
 
-The NOP instruction does not change any architecturally visible state,
-except for advancing the `pc` and incrementing any applicable
-performance counters. NOP is encoded as ADDI _x0, x0, 0_.
+NOP 指令不会改变任何架构上可见的状态，除了推进 `pc` 和增加任何应用的性能计数器。 NOP 被编码为 ADDI _x0, x0, 0_。
 
 [NOTE]
 ====
-NOPs can be used to align code segments to microarchitecturally
-significant address boundaries, or to leave space for inline code
-modifications. Although there are many possible ways to encode a NOP, we
-define a canonical NOP encoding to allow microarchitectural
-optimizations as well as for more readable disassembly output. The other
-NOP encodings are made available for <<rv32i-hints>>.
+NOP 可用于将代码段与微架构上的重要地址边界对齐，或为内联代码修改留下空间。 尽管编码一个 NOP 有很多可能的方式，但我们定义了一个典型的 NOP 编码，以允许微架构优化以及更具可读性的反汇编输出。 其他 NOP 编码可用于 <<rv32i-hints>>。
 
-ADDI was chosen for the NOP encoding as this is most likely to take
-fewest resources to execute across a range of systems (if not optimized
-away in decode). In particular, the instruction only reads one register.
-Also, an ADDI functional unit is more likely to be available in a
-superscalar design as adds are the most common operation. In particular,
-address-generation functional units can execute ADDI using the same
-hardware needed for base+offset address calculations, while
-register-register ADD or logical/shift operations require additional
-hardware.
+选择 ADDI 作为 NOP 编码，因为这最可能占用最少的资源来跨不同的系统执行（如果没有在解码中优化掉）。 特别是，该指令只读取一个寄存器。
+此外，在超标量设计中，更可能有一个 ADDI 功能单元，因为加法是最常见的操作。 特别是，地址生成功能单元可以使用基本+偏移地址计算所需的相同硬件执行 ADDI，而寄存器-寄存器加法或逻辑/移位操作则需要额外的硬件。
 ====
 
-=== Control Transfer Instructions
+=== 控制传输指令
 
-RV32I provides two types of control transfer instructions: unconditional
-jumps and conditional branches. Control transfer instructions in RV32I
-do _not_ have architecturally visible delay slots.
+RV32I 提供两种类型的控制传输指令：无条件跳转和条件分支。 RV32I 中的控制传输指令 _没有_ 构架上可见的延迟槽。
 
-If an instruction access-fault or instruction page-fault exception
-occurs on the target of a jump or taken branch, the exception is
-reported on the target instruction, not on the jump or branch
-instruction.
+如果在跳跃或采取分支的目标上发生指令访问故障或指令页故障异常，则该异常在目标指令上报告，而不是跳跃或分支指令。
 
-==== Unconditional Jumps
+==== 无条件跳转
 
-The jump and link (JAL) instruction uses the J-type format, where the
-J-immediate encodes a signed offset in multiples of 2 bytes. The offset
-is sign-extended and added to the address of the jump instruction to
-form the jump target address. Jumps can therefore target a
-&#177;1 MiB range. JAL stores the address of the instruction
-following the jump ('pc'+4) into register _rd_. The standard software
-calling convention uses 'x1' as the return address register and 'x5' as
-an alternate link register.
+跳跃和链接 (JAL) 指令使用 J 型格式，其中 J 立即数编码为 2 字节的倍数的带符号偏移量。 该偏移量符号扩展并加到跳转指令的地址上形成跳转目标地址。 因此跳转可以定位 ±1 MiB 范围。 JAL 将紧随跳转的指令（'pc'+4）的地址存储到寄存器 _rd_ 中。 标准软件调用约定使用 'x1' 作为返回地址寄存器，并使用 'x5' 作为备用链接寄存器。
 
 [NOTE]
 ====
-The alternate link register supports calling millicode routines (e.g.,
-those to save and restore registers in compressed code) while preserving
-the regular return address register. The register `x5` was chosen as the
-alternate link register as it maps to a temporary in the standard
-calling convention, and has an encoding that is only one bit different
-than the regular link register.
+备用链接寄存器支持调用微代码例程（例如，用于在压缩代码中保存和恢复寄存器的例程），同时保留常规返回地址寄存器。 选择寄存器 `x5` 作为备用链接寄存器，因为它在标准调用约定中映射到一个临时寄存器，并且其编码只比常规链接寄存器多一个位。
 ====
 
-Plain unconditional jumps (assembler pseudoinstruction J) are encoded as
-a JAL with _rd_=`x0`.
+普通无条件跳转（汇编伪指令 J）编码为 JAL，_rd_=`x0`。
 
 include::images/wavedrom/ct-unconditional.adoc[]
 
 //.The unconditional-jump instruction, JAL
 
-The indirect jump instruction JALR (jump and link register) uses the
-I-type encoding. The target address is obtained by adding the
-sign-extended 12-bit I-immediate to the register _rs1_, then setting the
-least-significant bit of the result to zero. The address of the
-instruction following the jump (`pc`+4) is written to register _rd_.
-Register `x0` can be used as the destination if the result is not
-required.
+间接跳转指令 JALR（跳转和链接寄存器）使用 I 型编码。 通过将符号扩展的 12 位 I-立即数添加到寄存器 _rs1_ 来获取目标地址，然后将结果的最低有效位设置为零。 跳转后指令的地址（`pc`+4）被写入寄存器 _rd_。
+如果结果不需要，可以使用寄存器 `x0` 作为目标寄存器。
 
 include::images/wavedrom/ct-unconditional-2.adoc[]
 
@@ -505,83 +310,49 @@ include::images/wavedrom/ct-unconditional-2.adoc[]
 
 [NOTE]
 ====
-The unconditional jump instructions all use PC-relative addressing to
-help support position-independent code. The JALR instruction was defined
-to enable a two-instruction sequence to jump anywhere in a 32-bit
-absolute address range. A LUI instruction can first load _rs1_ with the
-upper 20 bits of a target address, then JALR can add in the lower bits.
-Similarly, AUIPC then JALR can jump anywhere in a 32-bit `pc`-relative
-address range.
+所有无条件跳转指令均使用 PC 相对寻址以帮助支持位置无关代码。 JALR 指令定义为能够在 32 位绝对地址范围内的任意位置跳转的两指令序列。 LUI 指令可以首先将目标地址的高 20 位加载到 _rs1_ 中，然后 JALR 可以添加低位。
+类似地，AUIPC 然后 JALR 可以在 32 位 `pc` 相对地址范围内的任意位置跳转。
 
-Note that the JALR instruction does not treat the 12-bit immediate as
-multiples of 2 bytes, unlike the conditional branch instructions. This
-avoids one more immediate format in hardware. In practice, most uses of
-JALR will have either a zero immediate or be paired with a LUI or AUIPC,
-so the slight reduction in range is not significant.
+注意，JALR 指令不像条件分支指令那样将 12 位立即数视为 2 字节的倍数。 这样避免了硬件中多一个立即数格式。 实际上，大多数使用 JALR 的情况要么有一个零立即数，要么与 LUI 或 AUIPC 配对，因此范围的轻微减少并不显著。
 
-Clearing the least-significant bit when calculating the JALR target
-address both simplifies the hardware slightly and allows the low bit of
-function pointers to be used to store auxiliary information. Although
-there is potentially a slight loss of error checking in this case, in
-practice jumps to an incorrect instruction address will usually quickly
-raise an exception.
+在计算 JALR 目标地址时清除最低有效位既简化了硬件，又允许使用函数指针的低位来存储辅助信息。 虽然这种情况下可能会略微减少错误检查，但实际上跳转到错误指令地址通常会很快引发异常。
 
-When used with a base _rs1_=`x0`, JALR can be used to
-implement a single instruction subroutine call to the lowest or highest
-address region from anywhere in the address space, which could be used
-to implement fast calls to a small runtime library. Alternatively, an
-ABI could dedicate a general-purpose register to point to a library
-elsewhere in the address space.
+当与基 _rs1_=`x0` 一起使用时，JALR 可用于实现从地址空间的任何位置到最低或最高地址区域的单条指令子程序调用，这可以用来实现快速调用到小型运行时库。 或者，ABI 可专用通用寄存器以指向地址空间中其他位置的库。
 ====
 
-The JAL and JALR instructions will generate an
-instruction-address-misaligned exception if the target address is not
-aligned to a four-byte boundary.
+如果目标地址未对齐到四字节边界，JAL 和 JALR 指令会生成指令地址未对齐异常。
 
 [NOTE]
 ====
-Instruction-address-misaligned exceptions are not possible on machines
-that support extensions with 16-bit aligned instructions, such as the
-compressed instruction-set extension, C.
+对于支持 16 位对齐指令扩展的机器，例如压缩指令集扩展 C，指令地址未对齐异常是不可能的。
 ====
 
-Return-address prediction stacks are a common feature of
-high-performance instruction-fetch units, but require accurate detection
-of instructions used for procedure calls and returns to be effective.
-For RISC-V, hints as to the instructions' usage are encoded implicitly
-via the register numbers used. A JAL instruction should push the return
-address onto a return-address stack (RAS) only when _rd_ is 'x1' or
-`x5`. JALR instructions should push/pop a RAS as shown in <<rashints>>.
+返回地址预测栈是高性能指令获取单元的常见功能，但需要准确检测用于过程调用和返回的指令才能有效。
+对于 RISC-V，关于指令用法的提示通过使用的寄存器号码隐式编码。 仅当 _rd_ 为 'x1' 或 `x5` 时，JAL 指令应将返回地址推入返回地址栈 (RAS)。 JALR 指令应按 <<rashints>> 中所示推入/弹出一个 RAS。
 
 [[rashints]]
-.Return-address stack prediction hints encoded in the register operands of a JALR instruction.
+.JALR 指令的寄存器操作数中编码了返回地址栈预测提示。
 [%autowidth, float="center", align="center", cols="^,^,^,<", options="header"]
 |===
-|_rd_ is _x1/x5_ |_rs1_ is _x1/x5_ |_rd_=_rs1_ |RAS action
+|_rd_ 是 _x1/x5_ |_rs1_ 是 _x1/x5_ |_rd_=_rs1_ |RAS 操作
 
-|No |No |-- |None
+|无 |无 |-- |无
 
-|No |Yes |-- |Pop
+|无 |是 |-- |弹出
 
-|Yes |No |-- |Push
+|是 |无 |-- |入栈
 
-|Yes |Yes |No |Pop, then push
+|是 |是 |无 |先弹出，再入栈
 
-|Yes |Yes |Yes |Push
+|是 |是 |是 |入栈
 |===
 
 [NOTE]
 ====
-Some other ISAs added explicit hint bits to their indirect-jump
-instructions to guide return-address stack manipulation. We use implicit
-hinting tied to register numbers and the calling convention to reduce
-the encoding space used for these hints.
+其他一些指令集架构在它们的间接跳转指令中添加了显式提示位，以指导返回地址栈操作。 我们使用与寄存器号码和调用约定绑定的隐式提示来减少用于这些提示的编码空间。
 
-When two different link registers (`x1` and `x5`) are given as _rs1_ and
-_rd_, then the RAS is both popped and pushed to support coroutines. If
-_rs1_ and _rd_ are the same link register (either `x1` or `x5`), the RAS
-is only pushed to enable macro-op fusion of the sequences:
-`lui ra, imm20; jalr ra, imm12(ra)_ and _auipc ra, imm20; jalr ra, imm12(ra)`
+当两个不同的链接寄存器（`x1` 和 `x5`）作为 _rs1_ 和 _rd_ 给出时，RAS 同时出栈和入栈以支持协程。 如果 _rs1_ 和 _rd_ 是相同的链接寄存器（`x1` 或 `x5`），则 RAS 仅推入以启用序列的宏操作融合：
+`lui ra, imm20; jalr ra, imm12(ra)` 和 `auipc ra, imm20; jalr ra, imm12(ra)`
 ====
 
 ==== Conditional Branches
