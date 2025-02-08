@@ -5,7 +5,7 @@ ORIGIN=$PWD
 BUILD=$(mktemp -d)
 
 cleanup() {
-  rm -rf $BUILD
+  rm -rf $BUILD || true
 }
 trap cleanup EXIT
 
