@@ -14,7 +14,7 @@ jobs:
       - name: Rename
         run: |
           for i in $(find src -name '*.adoc'); do
-            mv $i $i.txt
+            mv $i $i.md
           done
       - name: crowdin action
         uses: Anillc/crowdin-action@master

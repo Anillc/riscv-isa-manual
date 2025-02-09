@@ -5,5 +5,5 @@ base_path: .
 preserve_hierarchy: true
 
 files:
-- source: /src/**/*.txt
+- source: /src/**/*.adoc.md
   translation: /src-%two_letters_code%/**/%original_file_name%

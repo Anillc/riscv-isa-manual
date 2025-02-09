@@ -12,8 +12,8 @@ trap cleanup EXIT
 cp -r ../src $BUILD
 cp -r ../build $BUILD
 cd ../src-zh
-for i in $(find . -name '*.adoc.txt'); do
-  cp $i $BUILD/src/${i%.txt}
+for i in $(find . -name '*.adoc.md'); do
+  cp $i $BUILD/src/${i%.md}
 done
 cd $BUILD/build
 make docker
